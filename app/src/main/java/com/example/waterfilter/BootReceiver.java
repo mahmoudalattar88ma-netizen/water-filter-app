@@ -1,3 +1,20 @@
+
 package com.example.waterfilter;
-import android.content.*;
-public class BootReceiver extends BroadcastReceiver { @Override public void onReceive(Context c,Intent i){String data=c.getSharedPreferences(MainActivity.PREFS,0).getString(MainActivity.DATA,null);if(data!=null)MainActivity.schedule(c,data);} }
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
+public class BootReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent == null) return;
+
+        String action = intent.getAction();
+
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
+            MainActivity.restoreSchedule(context);
+        }
+    }
+}

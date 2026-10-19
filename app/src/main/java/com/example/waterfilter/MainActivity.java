@@ -13,15 +13,18 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +36,11 @@ public class MainActivity extends Activity {
 
     public static final String PREFS = "filterprefs";
     public static final String DATA = "stagedata";
+
+    private static final int CREATE_BACKUP_REQUEST = 501;
+    private static final int OPEN_BACKUP_REQUEST = 502;
+
+    private String pendingBackupJson;
 
     @Override
     public void onCreate(Bundle b) {
@@ -109,7 +117,6 @@ public class MainActivity extends Activity {
             scheduleFilter(ctx, am, root.optJSONArray("5"), 500);
 
         } catch (Exception e) {
-            // دعم البيانات القديمة الخاصة بفلتر 7 مراحل
             try {
                 JSONArray old = new JSONArray(json);
 
@@ -144,7 +151,6 @@ public class MainActivity extends Activity {
         int count = baseId == 700 ? 7 : 5;
 
         for (int i = 0; i < count; i++) {
-
             int beforeId = baseId + i * 10 + 1;
             int dueId = baseId + i * 10 + 2;
 
@@ -162,7 +168,6 @@ public class MainActivity extends Activity {
             try {
                 SimpleDateFormat f =
                         new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-
                 f.setLenient(false);
 
                 Date installed = f.parse(ds);
@@ -190,22 +195,18 @@ public class MainActivity extends Activity {
                 long now = System.currentTimeMillis();
                 long dueTime = due.getTimeInMillis();
 
-                String filterName =
-                        baseId == 700
-                                ? "فلتر 7 مراحل"
-                                : "فلتر 5 مراحل";
+                String filterName = baseId == 700
+                        ? "فلتر 7 مراحل"
+                        : "فلتر 5 مراحل";
 
                 String label = s.optString(
                         "label", "المرحلة " + (i + 1)
                 );
-
                 String name = s.optString("name", "الشمعة");
-
                 String title = filterName + " — " + label + " — " + name;
 
                 Calendar before = (Calendar) due.clone();
                 before.add(Calendar.DAY_OF_YEAR, -2);
-
                 long beforeTime = before.getTimeInMillis();
 
                 if (beforeTime > now) {
@@ -235,63 +236,44 @@ public class MainActivity extends Activity {
             String message
     ) {
         Intent in = new Intent(c, ReminderReceiver.class);
-
         in.putExtra("id", id);
         in.putExtra("title", title);
         in.putExtra("message", message);
 
         PendingIntent pi = PendingIntent.getBroadcast(
-                c,
-                id,
-                in,
+                c, id, in,
                 PendingIntent.FLAG_UPDATE_CURRENT |
                         PendingIntent.FLAG_IMMUTABLE
         );
 
         try {
             if (Build.VERSION.SDK_INT >= 31) {
-
                 if (am.canScheduleExactAlarms()) {
                     am.setExactAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP, at, pi
                     );
                 } else {
-                    // بديل عند عدم منح إذن التنبيهات الدقيقة
                     am.setAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP, at, pi
                     );
                 }
-
             } else if (Build.VERSION.SDK_INT >= 23) {
                 am.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP, at, pi
                 );
-
             } else if (Build.VERSION.SDK_INT >= 19) {
-                am.setExact(
-                        AlarmManager.RTC_WAKEUP, at, pi
-                );
-
+                am.setExact(AlarmManager.RTC_WAKEUP, at, pi);
             } else {
-                am.set(
-                        AlarmManager.RTC_WAKEUP, at, pi
-                );
+                am.set(AlarmManager.RTC_WAKEUP, at, pi);
             }
-
         } catch (SecurityException e) {
-            android.util.Log.e(
-                    "WaterFilter", "Alarm permission", e
-            );
-
-            // محاولة جدولة بديلة إذا رفض أندرويد التنبيه الدقيق
+            android.util.Log.e("WaterFilter", "Alarm permission", e);
             try {
                 am.setAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP, at, pi
                 );
             } catch (Exception ex) {
-                android.util.Log.e(
-                        "WaterFilter", "Fallback alarm", ex
-                );
+                android.util.Log.e("WaterFilter", "Fallback alarm", ex);
             }
         }
     }
@@ -300,9 +282,7 @@ public class MainActivity extends Activity {
         Intent in = new Intent(c, ReminderReceiver.class);
 
         PendingIntent pi = PendingIntent.getBroadcast(
-                c,
-                id,
-                in,
+                c, id, in,
                 PendingIntent.FLAG_UPDATE_CURRENT |
                         PendingIntent.FLAG_IMMUTABLE
         );
@@ -312,6 +292,76 @@ public class MainActivity extends Activity {
 
         am.cancel(pi);
         pi.cancel();
+    }
+
+    @Override
+    protected void onActivityResult(
+            int requestCode, int resultCode, Intent data
+    ) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode != RESULT_OK || data == null ||
+                data.getData() == null) {
+            return;
+        }
+
+        Uri uri = data.getData();
+
+        if (requestCode == CREATE_BACKUP_REQUEST) {
+            try {
+                OutputStream out = getContentResolver().openOutputStream(uri);
+                if (out == null) throw new Exception("تعذر فتح الملف");
+
+                out.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
+                out.close();
+
+                Toast.makeText(
+                        this, "تم حفظ النسخة الاحتياطية",
+                        Toast.LENGTH_LONG
+                ).show();
+
+            } catch (Exception e) {
+                Toast.makeText(
+                        this, "فشل حفظ النسخة الاحتياطية",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+            pendingBackupJson = null;
+
+        } else if (requestCode == OPEN_BACKUP_REQUEST) {
+            try {
+                InputStream in = getContentResolver().openInputStream(uri);
+                if (in == null) throw new Exception("تعذر فتح الملف");
+
+                java.io.ByteArrayOutputStream buffer =
+                        new java.io.ByteArrayOutputStream();
+                byte[] bytes = new byte[4096];
+                int n;
+
+                while ((n = in.read(bytes)) != -1) {
+                    buffer.write(bytes, 0, n);
+                }
+                in.close();
+
+                String json = new String(
+                        buffer.toByteArray(), StandardCharsets.UTF_8
+                );
+
+                if (web != null) {
+                    web.evaluateJavascript(
+                            "window.onNativeBackupImported(" +
+                                    JSONObject.quote(json) + ");",
+                            null
+                    );
+                }
+
+            } catch (Exception e) {
+                Toast.makeText(
+                        this, "فشل قراءة ملف النسخة الاحتياطية",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        }
     }
 
     public class Bridge {
@@ -324,6 +374,37 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void updateSchedule(String json) {
             schedule(c, json);
+        }
+
+        @JavascriptInterface
+        public void exportBackup(String json) {
+            runOnUiThread(() -> {
+                pendingBackupJson = json;
+
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                intent.putExtra(
+                        Intent.EXTRA_TITLE, "نسخة-فلتر-المياه.json"
+                );
+
+                startActivityForResult(intent, CREATE_BACKUP_REQUEST);
+            });
+        }
+
+        @JavascriptInterface
+        public void importBackup() {
+            runOnUiThread(() -> {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                intent.putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        new String[]{"application/json", "text/json"}
+                );
+
+                startActivityForResult(intent, OPEN_BACKUP_REQUEST);
+            });
         }
     }
 }

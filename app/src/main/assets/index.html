@@ -48,7 +48,8 @@ button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:bo
 .status.warn{background:#fff5df;color:#8b5700}
 .status.due{background:#ffeded;color:#b11e29}
 .note{font-size:12px;color:var(--muted);line-height:1.7}
-footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
+footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding:8px 0 24px}
+.credit{display:block;color:var(--navy);font-weight:bold;font-size:12px;margin-top:5px}
 .hidden{display:none!important}
 @media(min-width:540px){.stages{grid-template-columns:repeat(7,minmax(0,1fr))}.stage{min-height:110px}}
 </style>
@@ -75,12 +76,10 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
 <section class="filter" id="editor">
  <h2 id="stageTitle">بيانات المرحلة الأولى</h2>
  <div id="statusBox" class="status">سجّل تاريخ التركيب ومدة الاستخدام.</div>
-
  <div class="row">
   <div><label for="stageName">اسم / نوع المرحلة</label><input id="stageName" maxlength="35" placeholder="مثلاً PP"></div>
   <div><label for="installDate">تاريخ التركيب</label><input id="installDate" type="date"></div>
  </div>
-
  <div class="row">
   <div><label for="duration">مدة الاستخدام</label><input id="duration" type="number" min="1" max="3650" value="180"></div>
   <div><label for="unit">الوحدة</label>
@@ -91,10 +90,8 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
    </select>
   </div>
  </div>
-
  <label for="details">ملاحظات (اختياري)</label>
  <textarea id="details" rows="2" maxlength="250" placeholder="مثلاً: نوع الشمعة أو ملاحظة عن المياه"></textarea>
-
  <div class="actions">
   <button class="primary" id="saveBtn">حفظ بيانات المرحلة</button>
   <button class="secondary" id="changedBtn">تم تغيير الشمعة النهارده</button>
@@ -115,7 +112,10 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
  <p id="notifyMsg" class="note" aria-live="polite"></p>
 </section>
 
-<footer>بياناتك محفوظة على نفس الجهاز والتطبيق. صدّر نسخة احتياطية قبل تغيير الموبايل.</footer>
+<footer>
+بياناتك محفوظة على نفس الجهاز والتطبيق. صدّر نسخة احتياطية قبل تغيير الموبايل.
+<span class="credit">تصميم وتطوير محمود العطار</span>
+</footer>
 </main>
 
 <script>
@@ -136,36 +136,27 @@ let data = loadData();
 let selected = 0;
 
 function defaultStage(i){
- return {
-  label: defaults[i][0],
-  name: defaults[i][1],
-  duration: defaults[i][2],
-  unit: defaults[i][3],
-  date: '',
-  details: ''
- };
+ return {label:defaults[i][0],name:defaults[i][1],duration:defaults[i][2],unit:defaults[i][3],date:'',details:''};
 }
 
 function normalizeStage(s,i){
- const base = defaultStage(i);
- if(!s || typeof s !== 'object') return base;
- const units = ['days','months','years'];
+ const base=defaultStage(i);
+ if(!s||typeof s!=='object')return base;
+ const units=['days','months','years'];
  return {
-  label: String(s.label || base.label).slice(0,35),
-  name: String(s.name || base.name).slice(0,35),
-  duration: Math.max(1,Math.min(3650,Number(s.duration)||base.duration)),
-  unit: units.includes(s.unit) ? s.unit : base.unit,
-  date: /^\d{4}-\d{2}-\d{2}$/.test(s.date || '') ? s.date : '',
-  details: String(s.details || '').slice(0,250)
+  label:String(s.label||base.label).slice(0,35),
+  name:String(s.name||base.name).slice(0,35),
+  duration:Math.max(1,Math.min(3650,Number(s.duration)||base.duration)),
+  unit:units.includes(s.unit)?s.unit:base.unit,
+  date:/^\d{4}-\d{2}-\d{2}$/.test(s.date||'')?s.date:'',
+  details:String(s.details||'').slice(0,250)
  };
 }
 
 function loadData(){
  try{
-  const x = JSON.parse(localStorage.getItem(KEY));
-  if(Array.isArray(x) && x.length===7){
-   return x.map((s,i)=>normalizeStage(s,i));
-  }
+  const x=JSON.parse(localStorage.getItem(KEY));
+  if(Array.isArray(x)&&x.length===7)return x.map((s,i)=>normalizeStage(s,i));
  }catch(e){}
  return defaults.map((_,i)=>defaultStage(i));
 }
@@ -182,84 +173,63 @@ function saveAll(){
 
 function updateNativeSchedule(){
  try{
-  if(window.AndroidBridge && typeof window.AndroidBridge.updateSchedule === 'function'){
+  if(window.AndroidBridge&&typeof window.AndroidBridge.updateSchedule==='function'){
    window.AndroidBridge.updateSchedule(JSON.stringify(data));
    return true;
   }
- }catch(e){
-  console.log('تعذر تحديث مواعيد أندرويد',e);
- }
+ }catch(e){console.log('تعذر تحديث مواعيد أندرويد',e);}
  return false;
 }
 
 function localDateString(d=new Date()){
- const y=d.getFullYear();
- const m=String(d.getMonth()+1).padStart(2,'0');
- const day=String(d.getDate()).padStart(2,'0');
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return `${y}-${m}-${day}`;
 }
 
 function addDuration(date,amount,unit){
- const parts=date.split('-').map(Number);
- const d=new Date(parts[0],parts[1]-1,parts[2],12,0,0,0);
- const n=Number(amount);
- if(unit==='days'){
-  d.setDate(d.getDate()+n);
- }else if(unit==='months'){
-  const targetMonth=d.getMonth()+n;
-  const originalDay=d.getDate();
+ const p=date.split('-').map(Number);
+ const d=new Date(p[0],p[1]-1,p[2],12,0,0,0),n=Number(amount);
+ if(unit==='days')d.setDate(d.getDate()+n);
+ else if(unit==='months'){
+  const original=d.getDate();
   d.setDate(1);
-  d.setMonth(targetMonth);
-  const lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
-  d.setDate(Math.min(originalDay,lastDay));
+  d.setMonth(d.getMonth()+n);
+  d.setDate(Math.min(original,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
  }else{
-  const originalMonth=d.getMonth();
-  const originalDay=d.getDate();
+  const month=d.getMonth(),original=d.getDate();
   d.setDate(1);
   d.setFullYear(d.getFullYear()+n);
-  d.setMonth(originalMonth);
-  const lastDay=new Date(d.getFullYear(),originalMonth+1,0).getDate();
-  d.setDate(Math.min(originalDay,lastDay));
+  d.setMonth(month);
+  d.setDate(Math.min(original,new Date(d.getFullYear(),month+1,0).getDate()));
  }
  return d;
 }
 
 function dayDiff(a,b){
- const aa=new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime();
- const bb=new Date(b.getFullYear(),b.getMonth(),b.getDate()).getTime();
- return Math.round((aa-bb)/86400000);
+ return Math.round((new Date(a.getFullYear(),a.getMonth(),a.getDate())-new Date(b.getFullYear(),b.getMonth(),b.getDate()))/86400000);
 }
 
 function dueInfo(s){
- if(!s.date) return {state:'unknown',left:null,due:null};
- const due=addDuration(s.date,s.duration,s.unit);
- const left=dayDiff(due,new Date());
- return {
-  state:left<0?'due':left<=2?'warn':'active',
-  left,
-  due
- };
+ if(!s.date)return{state:'unknown',left:null,due:null};
+ const due=addDuration(s.date,s.duration,s.unit),left=dayDiff(due,new Date());
+ return{state:left<0?'due':left<=2?'warn':'active',left,due};
 }
 
 function fmt(d){
- return d.toLocaleDateString('ar-EG',{
-  year:'numeric',month:'short',day:'numeric'
- });
+ return d.toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'});
 }
 
 function statusText(s){
  const i=dueInfo(s);
- if(!s.date) return 'لسه مفيش تاريخ تركيب مسجل للمرحلة دي.';
- if(i.left<0) return `🔴 ميعاد التغيير فات من ${Math.abs(i.left)} يوم. كان موعد التغيير ${fmt(i.due)}.`;
- if(i.left===0) return `🔴 ميعاد تغيير المرحلة النهارده (${fmt(i.due)}).`;
- if(i.left<=2) return `🟠 فاضل ${i.left} يوم على التغيير — الموعد ${fmt(i.due)}.`;
- return `🟢 المرحلة شغالة. فاضل ${i.left} يوم — موعد التغيير ${fmt(i.due)}.`;
+ if(!s.date)return'لسه مفيش تاريخ تركيب مسجل للمرحلة دي.';
+ if(i.left<0)return`🔴 ميعاد التغيير فات من ${Math.abs(i.left)} يوم. كان موعد التغيير ${fmt(i.due)}.`;
+ if(i.left===0)return`🔴 ميعاد تغيير المرحلة النهارده (${fmt(i.due)}).`;
+ if(i.left<=2)return`🟠 فاضل ${i.left} يوم على التغيير — الموعد ${fmt(i.due)}.`;
+ return`🟢 المرحلة شغالة. فاضل ${i.left} يوم — موعد التغيير ${fmt(i.due)}.`;
 }
 
 function esc(s){
- return String(s).replace(/[&<>"']/g,c=>({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
- }[c]));
+ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function render(){
@@ -269,9 +239,9 @@ function render(){
 
  data.forEach((s,i)=>{
   const info=dueInfo(s);
-  if(info.state==='active') active++;
-  if(info.state==='warn') soon++;
-  if(info.state==='due') due++;
+  if(info.state==='active')active++;
+  if(info.state==='warn')soon++;
+  if(info.state==='due')due++;
 
   const b=document.createElement('button');
   b.type='button';
@@ -289,9 +259,7 @@ function render(){
  document.getElementById('soonCount').textContent=soon;
  document.getElementById('dueCount').textContent=due;
 
- const s=data[selected];
- const info=dueInfo(s);
- const box=document.getElementById('statusBox');
+ const s=data[selected],info=dueInfo(s),box=document.getElementById('statusBox');
  box.className='status '+(info.state==='warn'?'warn':info.state==='due'?'due':'');
  box.textContent=statusText(s);
  document.getElementById('stageTitle').textContent='بيانات '+s.label;
@@ -341,7 +309,7 @@ document.getElementById('clearBtn').onclick=()=>{
 document.getElementById('notifyBtn').onclick=()=>{
  const msg=document.getElementById('notifyMsg');
 
- if(window.AndroidBridge && typeof window.AndroidBridge.updateSchedule==='function'){
+ if(window.AndroidBridge&&typeof window.AndroidBridge.updateSchedule==='function'){
   const ok=updateNativeSchedule();
   msg.textContent=ok
    ?'تم إرسال مواعيد المراحل إلى أندرويد. تأكد من السماح للتطبيق بالإشعارات من إعدادات الموبايل.'
@@ -349,7 +317,7 @@ document.getElementById('notifyBtn').onclick=()=>{
   return;
  }
 
- if(!('Notification' in window)){
+ if(!('Notification'in window)){
   msg.textContent='إشعارات المتصفح غير مدعومة هنا. لو بتستخدم نسخة APK، راجع إذن الإشعارات من إعدادات أندرويد.';
   return;
  }
@@ -370,21 +338,18 @@ document.getElementById('notifyBtn').onclick=()=>{
 };
 
 function checkNotifications(){
- if(!('Notification' in window) || Notification.permission!=='granted') return;
- const today=new Date();
- const stamp=localDateString(today);
+ if(!('Notification'in window)||Notification.permission!=='granted')return;
+ const stamp=localDateString();
 
  data.forEach((s,i)=>{
-  if(!s.date) return;
+  if(!s.date)return;
   const info=dueInfo(s);
-  if(info.left===2 || info.left===0){
+  if(info.left===2||info.left===0){
    const k='wf_notice_'+i+'_'+s.date+'_'+stamp;
    try{
-    if(localStorage.getItem(k)) return;
+    if(localStorage.getItem(k))return;
     const msg=info.left===0?'ميعاد تغييرها النهارده':'فاضل يومين على تغييرها';
-    new Notification('فلتر المياه — '+s.label,{
-     body:(s.name||'المرحلة')+': '+msg+'. موعد التغيير '+fmt(info.due)
-    });
+    new Notification('فلتر المياه — '+s.label,{body:(s.name||'المرحلة')+': '+msg+'. موعد التغيير '+fmt(info.due)});
     localStorage.setItem(k,'1');
    }catch(e){}
   }
@@ -411,11 +376,11 @@ document.getElementById('importBtn').onclick=()=>{
 
 document.getElementById('importFile').onchange=async e=>{
  const f=e.target.files[0];
- if(!f) return;
+ if(!f)return;
 
  try{
   const x=JSON.parse(await f.text());
-  if(!Array.isArray(x)||x.length!==7) throw Error('invalid');
+  if(!Array.isArray(x)||x.length!==7)throw Error('invalid');
   data=x.map((s,i)=>normalizeStage(s,i));
   saveAll();
   fillEditor();
@@ -432,30 +397,5 @@ updateNativeSchedule();
 checkNotifications();
 </script>
 </body>
-</html>
-:'nearest'});};
-document.getElementById('changedBtn').onclick=()=>{readEditor();data[selected].date=new Date().toLocaleDateString('en-CA');saveAll();fillEditor();};
-document.getElementById('clearBtn').onclick=()=>{if(confirm('متأكد إنك عاوز تمسح بيانات المرحلة دي؟')){data[selected]={...defaults[selected],date:'',details:''};saveAll();fillEditor();}};
-document.getElementById('notifyBtn').onclick=async()=>{
- const msg=document.getElementById('notifyMsg');
- if(!('Notification'in window)){msg.textContent='المتصفح ده لا يدعم إشعارات الويب. تقدر تتابع المواعيد من الشاشة الرئيسية.';return;}
- try{const p=await Notification.requestPermission();msg.textContent=p==='granted'?'تم السماح بالإشعارات. افتح التطبيق من وقت للتاني لمراجعة المواعيد.':'الإشعارات غير مفعّلة. تقدر تفعّلها من إعدادات المتصفح.';checkNotifications();}
- catch(e){msg.textContent='تعذر تفعيل الإشعارات في المتصفح الحالي.';}
-};
-function checkNotifications(){
- if(!('Notification'in window)||Notification.permission!=='granted')return;
- const today=new Date();const stamp=today.getFullYear()+'-'+today.getMonth()+'-'+today.getDate();
- data.forEach((s,i)=>{if(!s.date)return;const info=dueInfo(s);const k='wf_notice_'+i+'_'+s.date+'_'+stamp;
- if((info.left===2||info.left===1||info.left===0||info.left<0)&&!sessionStorage.getItem(k)){
-  const msg=info.left<0?'ميعاد تغييرها فات':info.left===0?'ميعاد تغييرها النهارده':'فاضل '+info.left+' يوم على تغييرها';
-  try{new Notification('فلتر المياه — '+(s.label||'المرحلة '+(i+1)),{body:(s.name||'المرحلة')+': '+msg+'. موعد التغيير '+fmt(info.due)});sessionStorage.setItem(k,'1')}catch(e){}
- }
- });
-}
-document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='نسخة-فلتر-المياه.json';a.click();URL.revokeObjectURL(a.href);};
-document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
-document.getElementById('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x)||x.length!==7)throw Error();data=x;saveAll();fillEditor();alert('تم استيراد البيانات.')}catch(err){alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.')}e.target.value='';};
-fillEditor();render();checkNotifications();try{if(window.AndroidBridge)AndroidBridge.updateSchedule(JSON.stringify(data));}catch(e){}
-</script>
-</body>
-</html>
+                    </html>
+   

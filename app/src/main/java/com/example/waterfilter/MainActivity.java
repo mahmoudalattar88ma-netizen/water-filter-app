@@ -10,8 +10,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -26,6 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
+
     WebView web;
 
     public static final String PREFS = "filterprefs";
@@ -34,13 +37,14 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle b) {
         super.onCreate(b);
+
         createChannel();
 
         if (Build.VERSION.SDK_INT >= 33 &&
-            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(
-                new String[]{Manifest.permission.POST_NOTIFICATIONS}, 44
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS}, 44
             );
         }
 
@@ -50,6 +54,7 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient());
         web.addJavascriptInterface(new Bridge(this), "AndroidBridge");
+
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
     }
@@ -62,21 +67,26 @@ public class MainActivity extends Activity {
 
     void createChannel() {
         if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel c = new NotificationChannel(
-                "filter_reminders",
-                "تذكيرات فلتر المياه",
-                NotificationManager.IMPORTANCE_HIGH
+            NotificationChannel channel = new NotificationChannel(
+                    "filter_reminders",
+                    "تذكيرات فلتر المياه",
+                    NotificationManager.IMPORTANCE_HIGH
             );
-            c.setDescription("مواعيد تغيير شمعات فلتر المياه");
+
+            channel.setDescription("مواعيد تغيير شمعات فلتر المياه");
+
             NotificationManager nm =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nm.createNotificationChannel(c);
+                    (NotificationManager) getSystemService(
+                            Context.NOTIFICATION_SERVICE
+                    );
+
+            nm.createNotificationChannel(channel);
         }
     }
 
     public static void restoreSchedule(Context ctx) {
         String data = ctx.getSharedPreferences(PREFS, 0)
-            .getString(DATA, null);
+                .getString(DATA, null);
 
         if (data != null) {
             schedule(ctx, data);
@@ -88,26 +98,33 @@ public class MainActivity extends Activity {
             JSONObject root = new JSONObject(json);
 
             ctx.getSharedPreferences(PREFS, 0)
-                .edit().putString(DATA, json).apply();
+                    .edit()
+                    .putString(DATA, json)
+                    .apply();
 
             AlarmManager am = (AlarmManager)
-                ctx.getSystemService(Context.ALARM_SERVICE);
+                    ctx.getSystemService(Context.ALARM_SERVICE);
 
             scheduleFilter(ctx, am, root.optJSONArray("7"), 700);
             scheduleFilter(ctx, am, root.optJSONArray("5"), 500);
 
         } catch (Exception e) {
-            // دعم البيانات القديمة الخاصة بفلتر واحد
+            // دعم البيانات القديمة الخاصة بفلتر 7 مراحل
             try {
                 JSONArray old = new JSONArray(json);
+
                 JSONObject wrapper = new JSONObject();
                 wrapper.put("7", old);
 
+                String converted = wrapper.toString();
+
                 ctx.getSharedPreferences(PREFS, 0)
-                    .edit().putString(DATA, wrapper.toString()).apply();
+                        .edit()
+                        .putString(DATA, converted)
+                        .apply();
 
                 AlarmManager am = (AlarmManager)
-                    ctx.getSystemService(Context.ALARM_SERVICE);
+                        ctx.getSystemService(Context.ALARM_SERVICE);
 
                 scheduleFilter(ctx, am, old, 700);
                 scheduleFilter(ctx, am, null, 500);
@@ -119,11 +136,15 @@ public class MainActivity extends Activity {
     }
 
     static void scheduleFilter(
-        Context ctx, AlarmManager am, JSONArray stages, int baseId
+            Context ctx,
+            AlarmManager am,
+            JSONArray stages,
+            int baseId
     ) {
         int count = baseId == 700 ? 7 : 5;
 
         for (int i = 0; i < count; i++) {
+
             int beforeId = baseId + i * 10 + 1;
             int dueId = baseId + i * 10 + 2;
 
@@ -140,7 +161,8 @@ public class MainActivity extends Activity {
 
             try {
                 SimpleDateFormat f =
-                    new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                        new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+
                 f.setLenient(false);
 
                 Date installed = f.parse(ds);
@@ -169,55 +191,108 @@ public class MainActivity extends Activity {
                 long dueTime = due.getTimeInMillis();
 
                 String filterName =
-                    baseId == 700 ? "فلتر 7 مراحل" : "فلتر 5 مراحل";
+                        baseId == 700
+                                ? "فلتر 7 مراحل"
+                                : "فلتر 5 مراحل";
+
                 String label = s.optString(
-                    "label", "المرحلة " + (i + 1)
+                        "label", "المرحلة " + (i + 1)
                 );
+
                 String name = s.optString("name", "الشمعة");
+
+                String title = filterName + " — " + label + " — " + name;
 
                 Calendar before = (Calendar) due.clone();
                 before.add(Calendar.DAY_OF_YEAR, -2);
+
                 long beforeTime = before.getTimeInMillis();
 
                 if (beforeTime > now) {
                     set(ctx, am, beforeTime, beforeId,
-                        filterName + " — " + label + " — " + name,
-                        "فاضل يومين على تغيير الشمعة");
+                            title, "فاضل يومين على تغيير الشمعة");
                 }
 
                 if (dueTime > now) {
                     set(ctx, am, dueTime, dueId,
-                        filterName + " — " + label + " — " + name,
-                        "ميعاد تغيير الشمعة النهارده");
+                            title, "ميعاد تغيير الشمعة النهارده");
                 }
 
             } catch (Exception e) {
-                android.util.Log.e("WaterFilter", "stage " + i, e);
+                android.util.Log.e(
+                        "WaterFilter", "stage " + i, e
+                );
             }
         }
     }
 
     static void set(
-        Context c, AlarmManager am, long at, int id,
-        String title, String message
+            Context c,
+            AlarmManager am,
+            long at,
+            int id,
+            String title,
+            String message
     ) {
         Intent in = new Intent(c, ReminderReceiver.class);
+
         in.putExtra("id", id);
         in.putExtra("title", title);
         in.putExtra("message", message);
 
         PendingIntent pi = PendingIntent.getBroadcast(
-            c, id, in,
-            PendingIntent.FLAG_UPDATE_CURRENT |
-            PendingIntent.FLAG_IMMUTABLE
+                c,
+                id,
+                in,
+                PendingIntent.FLAG_UPDATE_CURRENT |
+                        PendingIntent.FLAG_IMMUTABLE
         );
 
-        if (Build.VERSION.SDK_INT >= 23) {
-            am.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP, at, pi
+        try {
+            if (Build.VERSION.SDK_INT >= 31) {
+
+                if (am.canScheduleExactAlarms()) {
+                    am.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP, at, pi
+                    );
+                } else {
+                    // بديل عند عدم منح إذن التنبيهات الدقيقة
+                    am.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP, at, pi
+                    );
+                }
+
+            } else if (Build.VERSION.SDK_INT >= 23) {
+                am.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP, at, pi
+                );
+
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                am.setExact(
+                        AlarmManager.RTC_WAKEUP, at, pi
+                );
+
+            } else {
+                am.set(
+                        AlarmManager.RTC_WAKEUP, at, pi
+                );
+            }
+
+        } catch (SecurityException e) {
+            android.util.Log.e(
+                    "WaterFilter", "Alarm permission", e
             );
-        } else {
-            am.set(AlarmManager.RTC_WAKEUP, at, pi);
+
+            // محاولة جدولة بديلة إذا رفض أندرويد التنبيه الدقيق
+            try {
+                am.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP, at, pi
+                );
+            } catch (Exception ex) {
+                android.util.Log.e(
+                        "WaterFilter", "Fallback alarm", ex
+                );
+            }
         }
     }
 
@@ -225,13 +300,15 @@ public class MainActivity extends Activity {
         Intent in = new Intent(c, ReminderReceiver.class);
 
         PendingIntent pi = PendingIntent.getBroadcast(
-            c, id, in,
-            PendingIntent.FLAG_UPDATE_CURRENT |
-            PendingIntent.FLAG_IMMUTABLE
+                c,
+                id,
+                in,
+                PendingIntent.FLAG_UPDATE_CURRENT |
+                        PendingIntent.FLAG_IMMUTABLE
         );
 
         AlarmManager am = (AlarmManager)
-            c.getSystemService(Context.ALARM_SERVICE);
+                c.getSystemService(Context.ALARM_SERVICE);
 
         am.cancel(pi);
         pi.cancel();

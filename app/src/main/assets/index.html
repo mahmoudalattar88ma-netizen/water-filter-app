@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,32 +8,45 @@
 <title>متابع فلتر المياه</title>
 <style>
 :root{--blue:#0868b5;--navy:#084b86;--bg:#f2f7fb;--green:#168653;--orange:#e68a00;--red:#d92d36;--muted:#607386}
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:#16324b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:#16324b}
 header{background:linear-gradient(135deg,var(--blue),var(--navy));color:#fff;padding:22px 16px 28px;border-radius:0 0 24px 24px}
-h1{margin:0;font-size:23px}header p{margin:7px 0 0;opacity:.9;font-size:13px}
+h1{margin:0;font-size:23px}
+header p{margin:7px 0 0;opacity:.9;font-size:13px}
 main{max-width:760px;margin:auto;padding:14px}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:-12px}
 .stat{background:#fff;border-radius:14px;padding:12px 7px;text-align:center;box-shadow:0 3px 12px #153c5b10}
-.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:11px;color:var(--muted)}
 .filter{background:#fff;border-radius:18px;margin:14px 0;padding:16px;box-shadow:0 3px 14px #153c5b0b}
 .filter h2{font-size:17px;margin:0 0 13px}
 .stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .stage{border:1px solid #dce7ef;background:#fff;border-radius:13px;padding:10px 4px;cursor:pointer;text-align:center;min-height:104px;color:#16324b}
-.stage:focus{outline:2px solid var(--blue)}.cartridge{height:40px;width:22px;margin:0 auto 7px;border:2px solid #b9c6d0;border-radius:8px 8px 6px 6px;background:linear-gradient(90deg,#e6edf2,#fff,#d9e4eb);position:relative}
+.stage:focus{outline:2px solid var(--blue)}
+.cartridge{height:40px;width:22px;margin:0 auto 7px;border:2px solid #b9c6d0;border-radius:8px 8px 6px 6px;background:linear-gradient(90deg,#e6edf2,#fff,#d9e4eb);position:relative}
 .cartridge:before{content:"";position:absolute;top:-5px;left:4px;width:10px;height:5px;background:#b8c6d0;border-radius:3px 3px 0 0}
-.stage strong{display:block;font-size:12px}.stage small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.stage strong{display:block;font-size:12px}
+.stage small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px;background:var(--green)}
-.stage.warn{border-color:#f0c16d;background:#fffaf0}.stage.warn .dot{background:var(--orange)}
-.stage.due{border-color:#f2a2a6;background:#fff3f3}.stage.due .dot{background:var(--red)}
+.stage.warn{border-color:#f0c16d;background:#fffaf0}
+.stage.warn .dot{background:var(--orange)}
+.stage.due{border-color:#f2a2a6;background:#fff3f3}
+.stage.due .dot{background:var(--red)}
 .stage.unknown .dot{background:#9aa8b4}
 .stage.selected{box-shadow:0 0 0 2px var(--blue)}
-.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:130px}
 label{display:block;font-size:12px;color:#3f5a70;margin:12px 0 5px}
 input,select,textarea{width:100%;border:1px solid #cfdae4;border-radius:10px;padding:11px;font:inherit;font-size:14px;background:#fff;color:#17334b}
 button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:bold;cursor:pointer}
-.primary{background:var(--blue);color:#fff}.secondary{background:#eaf3fa;color:var(--navy)}.danger{background:#fff0f0;color:var(--red)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1}
-.status{border-radius:11px;padding:10px 12px;background:#eaf7ef;color:#116b42;font-size:13px;margin:12px 0}.status.warn{background:#fff5df;color:#8b5700}.status.due{background:#ffeded;color:#b11e29}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#eaf3fa;color:var(--navy)}
+.danger{background:#fff0f0;color:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.actions button{flex:1}
+.status{border-radius:11px;padding:10px 12px;background:#eaf7ef;color:#116b42;font-size:13px;margin:12px 0}
+.status.warn{background:#fff5df;color:#8b5700}
+.status.due{background:#ffeded;color:#b11e29}
 .note{font-size:12px;color:var(--muted);line-height:1.7}
 footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
 .hidden{display:none!important}
@@ -40,51 +54,73 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 24px}
 </style>
 </head>
 <body>
-<header><h1>💧 متابع فلتر المياه</h1><p>تابع الـ 7 مراحل ومواعيد تغيير الشمعات بسهولة</p></header>
+<header>
+<h1>💧 متابع فلتر المياه</h1>
+<p>تابع الـ 7 مراحل ومواعيد تغيير الشمعات بسهولة</p>
+</header>
+
 <main>
 <section class="summary">
  <div class="stat"><b id="activeCount">0</b><span>شمعات لسه شغالة</span></div>
  <div class="stat"><b id="soonCount">0</b><span>تغيير خلال يومين</span></div>
  <div class="stat"><b id="dueCount">0</b><span>مواعيد فاتت أو النهارده</span></div>
 </section>
+
 <section class="filter">
  <h2>مراحل الفلتر — دوس على أي مرحلة</h2>
  <div class="stages" id="stages"></div>
  <p class="note">🟢 شغالة &nbsp; 🟠 قربت تتغير &nbsp; 🔴 ميعاد التغيير جه أو عدى &nbsp; ⚪ لسه مدخلتش بياناتها</p>
 </section>
+
 <section class="filter" id="editor">
  <h2 id="stageTitle">بيانات المرحلة الأولى</h2>
  <div id="statusBox" class="status">سجّل تاريخ التركيب ومدة الاستخدام.</div>
+
  <div class="row">
   <div><label for="stageName">اسم / نوع المرحلة</label><input id="stageName" maxlength="35" placeholder="مثلاً PP"></div>
   <div><label for="installDate">تاريخ التركيب</label><input id="installDate" type="date"></div>
  </div>
+
  <div class="row">
   <div><label for="duration">مدة الاستخدام</label><input id="duration" type="number" min="1" max="3650" value="180"></div>
-  <div><label for="unit">الوحدة</label><select id="unit"><option value="days">يوم</option><option value="months" selected>شهر</option><option value="years">سنة</option></select></div>
+  <div><label for="unit">الوحدة</label>
+   <select id="unit">
+    <option value="days">يوم</option>
+    <option value="months" selected>شهر</option>
+    <option value="years">سنة</option>
+   </select>
+  </div>
  </div>
- <label for="details">ملاحظات (اختياري)</label><textarea id="details" rows="2" maxlength="250" placeholder="مثلاً: نوع الشمعة أو ملاحظة عن المياه"></textarea>
+
+ <label for="details">ملاحظات (اختياري)</label>
+ <textarea id="details" rows="2" maxlength="250" placeholder="مثلاً: نوع الشمعة أو ملاحظة عن المياه"></textarea>
+
  <div class="actions">
   <button class="primary" id="saveBtn">حفظ بيانات المرحلة</button>
   <button class="secondary" id="changedBtn">تم تغيير الشمعة النهارده</button>
   <button class="danger" id="clearBtn">مسح بيانات المرحلة</button>
  </div>
- <p class="note">التنبيه قبل ميعاد التغيير بيومين. اسم المرحلة والمدة قابلين للتعديل حسب نوع الشمعة واستهلاك المياه.</p>
+ <p class="note">التنبيه قبل ميعاد التغيير بيومين، وتنبيه يوم الاستحقاق. لازم تسمح للتطبيق بإرسال الإشعارات.</p>
 </section>
+
 <section class="filter">
  <h2>🔔 الإشعارات والنسخة الاحتياطية</h2>
- <p class="note">فعّل الإشعارات عشان التطبيق يحاول ينبهك قبل الميعاد بيومين. على بعض الموبايلات، تنبيهات المتصفح مش بتوصل لو المتصفح مقفول؛ النسخة المثبتة كتطبيق أندرويد تقدر تدعم تذكيرًا أكثر اعتمادية.</p>
+ <p class="note">في نسخة أندرويد، مواعيد التذكير بتتسجل عن طريق التطبيق. لو الإشعارات مش بتوصل، راجع إذن الإشعارات وإعدادات البطارية في الموبايل.</p>
  <div class="actions">
-  <button class="primary" id="notifyBtn">تفعيل الإشعارات</button>
+  <button class="primary" id="notifyBtn">تحديث مواعيد الإشعارات</button>
   <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
   <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
   <input class="hidden" id="importFile" type="file" accept="application/json">
  </div>
- <p id="notifyMsg" class="note"></p>
+ <p id="notifyMsg" class="note" aria-live="polite"></p>
 </section>
-<footer>بياناتك محفوظة على نفس الجهاز والمتصفح. صدّر نسخة احتياطية لو هتغيّر الموبايل أو المتصفح.</footer>
+
+<footer>بياناتك محفوظة على نفس الجهاز والتطبيق. صدّر نسخة احتياطية قبل تغيير الموبايل.</footer>
 </main>
+
 <script>
+'use strict';
+
 const defaults = [
  ['المرحلة الأولى','PP',180,'months'],
  ['المرحلة الثانية','GAC',180,'months'],
@@ -94,62 +130,310 @@ const defaults = [
  ['المرحلة السادسة','Mineral',180,'months'],
  ['المرحلة السابعة','Post Carbon',180,'months']
 ];
-const KEY='waterFilterTracker_v1';
-let data=loadData(), selected=0;
-function loadData(){try{let x=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(x)&&x.length===7)return x}catch(e){}return defaults.map(x=>({label:x[0],name:x[1],duration:x[2],unit:x[3],date:'',details:''}));}
-function saveAll(){localStorage.setItem(KEY,JSON.stringify(data));render();try{if(window.AndroidBridge)AndroidBridge.updateSchedule(JSON.stringify(data));}catch(e){}}
+
+const KEY = 'waterFilterTracker_v1';
+let data = loadData();
+let selected = 0;
+
+function defaultStage(i){
+ return {
+  label: defaults[i][0],
+  name: defaults[i][1],
+  duration: defaults[i][2],
+  unit: defaults[i][3],
+  date: '',
+  details: ''
+ };
+}
+
+function normalizeStage(s,i){
+ const base = defaultStage(i);
+ if(!s || typeof s !== 'object') return base;
+ const units = ['days','months','years'];
+ return {
+  label: String(s.label || base.label).slice(0,35),
+  name: String(s.name || base.name).slice(0,35),
+  duration: Math.max(1,Math.min(3650,Number(s.duration)||base.duration)),
+  unit: units.includes(s.unit) ? s.unit : base.unit,
+  date: /^\d{4}-\d{2}-\d{2}$/.test(s.date || '') ? s.date : '',
+  details: String(s.details || '').slice(0,250)
+ };
+}
+
+function loadData(){
+ try{
+  const x = JSON.parse(localStorage.getItem(KEY));
+  if(Array.isArray(x) && x.length===7){
+   return x.map((s,i)=>normalizeStage(s,i));
+  }
+ }catch(e){}
+ return defaults.map((_,i)=>defaultStage(i));
+}
+
+function saveAll(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+ }catch(e){
+  alert('تعذر حفظ البيانات. تأكد من وجود مساحة كافية على الجهاز.');
+ }
+ render();
+ updateNativeSchedule();
+}
+
+function updateNativeSchedule(){
+ try{
+  if(window.AndroidBridge && typeof window.AndroidBridge.updateSchedule === 'function'){
+   window.AndroidBridge.updateSchedule(JSON.stringify(data));
+   return true;
+  }
+ }catch(e){
+  console.log('تعذر تحديث مواعيد أندرويد',e);
+ }
+ return false;
+}
+
+function localDateString(d=new Date()){
+ const y=d.getFullYear();
+ const m=String(d.getMonth()+1).padStart(2,'0');
+ const day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
+}
+
 function addDuration(date,amount,unit){
- const d=new Date(date+'T12:00:00');
- if(unit==='days')d.setDate(d.getDate()+Number(amount));
- else if(unit==='months')d.setMonth(d.getMonth()+Number(amount));
- else d.setFullYear(d.getFullYear()+Number(amount));
+ const parts=date.split('-').map(Number);
+ const d=new Date(parts[0],parts[1]-1,parts[2],12,0,0,0);
+ const n=Number(amount);
+ if(unit==='days'){
+  d.setDate(d.getDate()+n);
+ }else if(unit==='months'){
+  const targetMonth=d.getMonth()+n;
+  const originalDay=d.getDate();
+  d.setDate(1);
+  d.setMonth(targetMonth);
+  const lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  d.setDate(Math.min(originalDay,lastDay));
+ }else{
+  const originalMonth=d.getMonth();
+  const originalDay=d.getDate();
+  d.setDate(1);
+  d.setFullYear(d.getFullYear()+n);
+  d.setMonth(originalMonth);
+  const lastDay=new Date(d.getFullYear(),originalMonth+1,0).getDate();
+  d.setDate(Math.min(originalDay,lastDay));
+ }
  return d;
 }
-function dayDiff(a,b){return Math.ceil((new Date(a.getFullYear(),a.getMonth(),a.getDate())-new Date(b.getFullYear(),b.getMonth(),b.getDate()))/86400000)}
-function dueInfo(s){
- if(!s.date)return {state:'unknown',left:null,due:null};
- const due=addDuration(s.date,s.duration,s.unit), today=new Date();
- const left=dayDiff(due,today);
- return {state:left<0?'due':left<=2?'warn':'active',left,due};
+
+function dayDiff(a,b){
+ const aa=new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime();
+ const bb=new Date(b.getFullYear(),b.getMonth(),b.getDate()).getTime();
+ return Math.round((aa-bb)/86400000);
 }
-function fmt(d){return d.toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'})}
+
+function dueInfo(s){
+ if(!s.date) return {state:'unknown',left:null,due:null};
+ const due=addDuration(s.date,s.duration,s.unit);
+ const left=dayDiff(due,new Date());
+ return {
+  state:left<0?'due':left<=2?'warn':'active',
+  left,
+  due
+ };
+}
+
+function fmt(d){
+ return d.toLocaleDateString('ar-EG',{
+  year:'numeric',month:'short',day:'numeric'
+ });
+}
+
 function statusText(s){
  const i=dueInfo(s);
- if(!s.date)return 'لسه مفيش تاريخ تركيب مسجل للمرحلة دي.';
- if(i.left<0)return `⚠️ ميعاد التغيير فات من ${Math.abs(i.left)} يوم. كان موعد التغيير ${fmt(i.due)}.`;
- if(i.left===0)return `🔴 ميعاد تغيير المرحلة النهارده (${fmt(i.due)}).`;
- if(i.left<=2)return `🟠 فاضل ${i.left} يوم على التغيير — الموعد ${fmt(i.due)}.`;
+ if(!s.date) return 'لسه مفيش تاريخ تركيب مسجل للمرحلة دي.';
+ if(i.left<0) return `🔴 ميعاد التغيير فات من ${Math.abs(i.left)} يوم. كان موعد التغيير ${fmt(i.due)}.`;
+ if(i.left===0) return `🔴 ميعاد تغيير المرحلة النهارده (${fmt(i.due)}).`;
+ if(i.left<=2) return `🟠 فاضل ${i.left} يوم على التغيير — الموعد ${fmt(i.due)}.`;
  return `🟢 المرحلة شغالة. فاضل ${i.left} يوم — موعد التغيير ${fmt(i.due)}.`;
 }
+
+function esc(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
 function render(){
- const holder=document.getElementById('stages');holder.innerHTML='';
+ const holder=document.getElementById('stages');
+ holder.innerHTML='';
  let active=0,soon=0,due=0;
+
  data.forEach((s,i)=>{
   const info=dueInfo(s);
-  if(info.state==='active')active++;if(info.state==='warn')soon++;if(info.state==='due')due++;
-  const b=document.createElement('button');b.className='stage '+info.state+(i===selected?' selected':'');
-  b.innerHTML=`<div class="cartridge"></div><strong><span class="dot"></span>${esc(s.label||'المرحلة '+(i+1))}</strong><small>${esc(s.name||'نوع غير محدد')}</small>`;
-  b.onclick=()=>{selected=i;fillEditor();render()};holder.appendChild(b);
+  if(info.state==='active') active++;
+  if(info.state==='warn') soon++;
+  if(info.state==='due') due++;
+
+  const b=document.createElement('button');
+  b.type='button';
+  b.className='stage '+info.state+(i===selected?' selected':'');
+  b.innerHTML=`<div class="cartridge"></div><strong><span class="dot"></span>${esc(s.label)}</strong><small>${esc(s.name||'نوع غير محدد')}</small>`;
+  b.onclick=()=>{
+   selected=i;
+   fillEditor();
+   render();
+  };
+  holder.appendChild(b);
  });
+
  document.getElementById('activeCount').textContent=active;
  document.getElementById('soonCount').textContent=soon;
  document.getElementById('dueCount').textContent=due;
- const s=data[selected], info=dueInfo(s), box=document.getElementById('statusBox');
+
+ const s=data[selected];
+ const info=dueInfo(s);
+ const box=document.getElementById('statusBox');
  box.className='status '+(info.state==='warn'?'warn':info.state==='due'?'due':'');
  box.textContent=statusText(s);
- document.getElementById('stageTitle').textContent='بيانات '+(s.label||'المرحلة '+(selected+1));
+ document.getElementById('stageTitle').textContent='بيانات '+s.label;
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 function fillEditor(){
  const s=data[selected];
- document.getElementById('stageName').value=s.name||'';
- document.getElementById('installDate').value=s.date||'';
- document.getElementById('duration').value=s.duration||180;
- document.getElementById('unit').value=s.unit||'months';
- document.getElementById('details').value=s.details||'';
+ document.getElementById('stageName').value=s.name;
+ document.getElementById('installDate').value=s.date;
+ document.getElementById('duration').value=s.duration;
+ document.getElementById('unit').value=s.unit;
+ document.getElementById('details').value=s.details;
 }
-function readEditor(){const s=data[selected];s.name=document.getElementById('stageName').value.trim()||'نوع غير محدد';s.date=document.getElementById('installDate').value;s.duration=Math.max(1,Math.min(3650,Number(document.getElementById('duration').value)||180));s.unit=document.getElementById('unit').value;s.details=document.getElementById('details').value.trim();}
-document.getElementById('saveBtn').onclick=()=>{readEditor();saveAll();document.getElementById('statusBox').scrollIntoView({behavior:'smooth',block:'nearest'});};
+
+function readEditor(){
+ const s=data[selected];
+ s.name=document.getElementById('stageName').value.trim()||'نوع غير محدد';
+ s.date=document.getElementById('installDate').value;
+ s.duration=Math.max(1,Math.min(3650,Number(document.getElementById('duration').value)||180));
+ s.unit=document.getElementById('unit').value;
+ s.details=document.getElementById('details').value.trim();
+}
+
+document.getElementById('saveBtn').onclick=()=>{
+ readEditor();
+ saveAll();
+ document.getElementById('notifyMsg').textContent='تم حفظ البيانات وتحديث مواعيد التذكير إذا كان التطبيق مثبتًا كـAPK.';
+};
+
+document.getElementById('changedBtn').onclick=()=>{
+ readEditor();
+ data[selected].date=localDateString();
+ saveAll();
+ fillEditor();
+ document.getElementById('notifyMsg').textContent='تم تسجيل تغيير الشمعة بتاريخ النهارده وتحديث موعدها القادم.';
+};
+
+document.getElementById('clearBtn').onclick=()=>{
+ if(confirm('متأكد إنك عاوز تمسح بيانات المرحلة دي؟')){
+  data[selected]=defaultStage(selected);
+  saveAll();
+  fillEditor();
+  document.getElementById('notifyMsg').textContent='تم مسح بيانات المرحلة وتحديث المواعيد.';
+ }
+};
+
+document.getElementById('notifyBtn').onclick=()=>{
+ const msg=document.getElementById('notifyMsg');
+
+ if(window.AndroidBridge && typeof window.AndroidBridge.updateSchedule==='function'){
+  const ok=updateNativeSchedule();
+  msg.textContent=ok
+   ?'تم إرسال مواعيد المراحل إلى أندرويد. تأكد من السماح للتطبيق بالإشعارات من إعدادات الموبايل.'
+   :'تعذر تحديث مواعيد أندرويد. اقفل التطبيق وافتحه تاني.';
+  return;
+ }
+
+ if(!('Notification' in window)){
+  msg.textContent='إشعارات المتصفح غير مدعومة هنا. لو بتستخدم نسخة APK، راجع إذن الإشعارات من إعدادات أندرويد.';
+  return;
+ }
+
+ if(Notification.permission==='granted'){
+  checkNotifications();
+  msg.textContent='إشعارات المتصفح مسموحة، لكنها مش مضمونة لو المتصفح مقفول. استخدم نسخة APK للتذكير في الخلفية.';
+ }else{
+  Notification.requestPermission().then(permission=>{
+   msg.textContent=permission==='granted'
+    ?'تم السماح بإشعارات المتصفح. التنبيه في الخلفية يظل معتمدًا على دعم المتصفح.'
+    :'الإشعارات غير مسموح بها. فعّلها من إعدادات الجهاز.';
+   checkNotifications();
+  }).catch(()=>{
+   msg.textContent='تعذر طلب إذن الإشعارات.';
+  });
+ }
+};
+
+function checkNotifications(){
+ if(!('Notification' in window) || Notification.permission!=='granted') return;
+ const today=new Date();
+ const stamp=localDateString(today);
+
+ data.forEach((s,i)=>{
+  if(!s.date) return;
+  const info=dueInfo(s);
+  if(info.left===2 || info.left===0){
+   const k='wf_notice_'+i+'_'+s.date+'_'+stamp;
+   try{
+    if(localStorage.getItem(k)) return;
+    const msg=info.left===0?'ميعاد تغييرها النهارده':'فاضل يومين على تغييرها';
+    new Notification('فلتر المياه — '+s.label,{
+     body:(s.name||'المرحلة')+': '+msg+'. موعد التغيير '+fmt(info.due)
+    });
+    localStorage.setItem(k,'1');
+   }catch(e){}
+  }
+ });
+}
+
+document.getElementById('exportBtn').onclick=()=>{
+ try{
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='نسخة-فلتر-المياه.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }catch(e){
+  alert('تعذر تصدير النسخة الاحتياطية.');
+ }
+};
+
+document.getElementById('importBtn').onclick=()=>{
+ document.getElementById('importFile').click();
+};
+
+document.getElementById('importFile').onchange=async e=>{
+ const f=e.target.files[0];
+ if(!f) return;
+
+ try{
+  const x=JSON.parse(await f.text());
+  if(!Array.isArray(x)||x.length!==7) throw Error('invalid');
+  data=x.map((s,i)=>normalizeStage(s,i));
+  saveAll();
+  fillEditor();
+  alert('تم استيراد البيانات وتحديث مواعيد التذكير.');
+ }catch(err){
+  alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');
+ }
+ e.target.value='';
+};
+
+fillEditor();
+render();
+updateNativeSchedule();
+checkNotifications();
+</script>
+</body>
+</html>
+:'nearest'});};
 document.getElementById('changedBtn').onclick=()=>{readEditor();data[selected].date=new Date().toLocaleDateString('en-CA');saveAll();fillEditor();};
 document.getElementById('clearBtn').onclick=()=>{if(confirm('متأكد إنك عاوز تمسح بيانات المرحلة دي؟')){data[selected]={...defaults[selected],date:'',details:''};saveAll();fillEditor();}};
 document.getElementById('notifyBtn').onclick=async()=>{

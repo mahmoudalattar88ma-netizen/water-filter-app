@@ -17,7 +17,6 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent == null) return;
 
-        // التأكد إن الإشعارات مفعلة من داخل التطبيق.
         if (!MainActivity.notificationsEnabled(context)) return;
 
         NotificationManager manager =
@@ -27,7 +26,6 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         if (manager == null) return;
 
-        // التأكد إن إشعارات التطبيق مسموح بها من إعدادات أندرويد.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && !manager.areNotificationsEnabled()) {
             return;
@@ -95,7 +93,6 @@ public class ReminderReceiver extends BroadcastReceiver {
                     )
             );
         } catch (Exception ignored) {
-            // الأيقونة الكبيرة اختيارية.
         }
 
         manager.notify(id, builder.build());

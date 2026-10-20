@@ -7,82 +7,97 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 
 public class ReminderReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context c, Intent i) {
+    public void onReceive(Context context, Intent intent) {
+        if (intent == null) return;
 
-        // التأكد إن الإشعارات مفعّلة
-        boolean enabled = c.getSharedPreferences(
-                MainActivity.PREFS, Context.MODE_PRIVATE
-        ).getBoolean("notifications_enabled", true);
+        // التأكد إن الإشعارات مفعلة من داخل التطبيق.
+        if (!MainActivity.notificationsEnabled(context)) return;
 
-        if (!enabled) return;
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(
+                        Context.NOTIFICATION_SERVICE
+                );
 
-        String title = i.getStringExtra("title");
-        String msg = i.getStringExtra("message");
-        int id = i.getIntExtra("id", 1);
+        if (manager == null) return;
 
-        Intent open = new Intent(c, MainActivity.class);
+        // التأكد إن إشعارات التطبيق مسموح بها من إعدادات أندرويد.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && !manager.areNotificationsEnabled()) {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= 33
+                && context.checkSelfPermission(
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        String title = intent.getStringExtra("title");
+        String message = intent.getStringExtra("message");
+        int id = intent.getIntExtra("id", 1);
+
+        if (title == null || title.trim().isEmpty()) {
+            title = "متابع فلتر المياه";
+        }
+
+        if (message == null || message.trim().isEmpty()) {
+            message = "راجع موعد تغيير الشمعة";
+        }
+
+        Intent open = new Intent(context, MainActivity.class);
         open.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TOP
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
         );
 
         PendingIntent tap = PendingIntent.getActivity(
-                c,
+                context,
                 id,
                 open,
-                PendingIntent.FLAG_UPDATE_CURRENT |
-                PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT
+                        | PendingIntent.FLAG_IMMUTABLE
         );
 
-        Notification.Builder b;
+        Notification.Builder builder;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            b = new Notification.Builder(c, "filter_reminders");
+            builder = new Notification.Builder(
+                    context,
+                    "filter_reminders"
+            );
         } else {
-            b = new Notification.Builder(c);
-            b.setPriority(Notification.PRIORITY_HIGH);
+            builder = new Notification.Builder(context);
+            builder.setPriority(Notification.PRIORITY_HIGH);
         }
 
-        b.setSmallIcon(R.drawable.water_filter)
-         .setContentTitle(
-                 title == null ? "متابع فلتر المياه" : title
-         )
-         .setContentText(
-                 msg == null ? "راجع موعد تغيير الشمعة" : msg
-         )
-         .setStyle(
-                 new Notification.BigTextStyle().bigText(
-                         msg == null
-                                 ? "راجع موعد تغيير الشمعة"
-                                 : msg
-                 )
-         )
-         .setAutoCancel(true)
-         .setContentIntent(tap);
+        builder.setSmallIcon(R.drawable.water_filter)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setStyle(
+                        new Notification.BigTextStyle().bigText(message)
+                )
+                .setAutoCancel(true)
+                .setContentIntent(tap);
 
         try {
-            b.setLargeIcon(
+            builder.setLargeIcon(
                     BitmapFactory.decodeResource(
-                            c.getResources(),
+                            context.getResources(),
                             R.drawable.water_filter
                     )
             );
         } catch (Exception ignored) {
+            // الأيقونة الكبيرة اختيارية.
         }
 
-        NotificationManager nm =
-                (NotificationManager) c.getSystemService(
-                        Context.NOTIFICATION_SERVICE
-                );
-
-        if (nm != null) {
-            nm.notify(id, b.build());
-        }
+        manager.notify(id, builder.build());
     }
 }

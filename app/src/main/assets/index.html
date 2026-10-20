@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0868b5">
 <title>متابع فلتر المياه</title>
-
 <style>
 :root{
  --blue:#0868b5;--navy:#084b86;--bg:#f2f7fb;
@@ -58,8 +57,6 @@ button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:bo
 footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding:8px 0 24px}
 .credit{display:block;color:var(--navy);font-weight:bold;font-size:12px;margin-top:5px}
 .hidden{display:none!important}
-
-/* مفتاح تشغيل وإيقاف الإشعارات */
 .notify-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#f2f7fb;border-radius:13px;padding:13px;margin:12px 0}
 .notify-toggle strong{display:block;font-size:14px}
 .switch{position:relative;display:inline-block;width:54px;height:30px;flex:0 0 54px;margin:0}
@@ -69,7 +66,6 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 .switch input:checked+.slider{background:var(--green)}
 .switch input:checked+.slider:before{transform:translateX(-24px)}
 .switch input:focus-visible+.slider{outline:2px solid var(--blue);outline-offset:3px}
-
 @media(min-width:540px){
  .stages.seven{grid-template-columns:repeat(7,minmax(0,1fr))}
  .stages.five{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -77,13 +73,11 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 }
 </style>
 </head>
-
 <body>
 <header>
  <h1>💧 متابع فلتر المياه</h1>
  <p>تابع مواعيد تغيير الشمعات للفلترين بشكل مستقل</p>
 </header>
-
 <main>
  <section class="filter">
   <h2>اختار الفلتر</h2>
@@ -91,7 +85,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
    <button type="button" class="choice active" id="choose7">فلتر 7 مراحل</button>
    <button type="button" class="choice" id="choose5">فلتر 5 مراحل</button>
   </div>
-  <p class="note" id="filterHint">مدد التغيير الافتراضية: 3، 6، 6، 24، 12، 18، 18 شهر.</p>
+  <p class="note" id="filterHint">مدد التغيير الافتراضية: 3، 6، 6، 12، 12، 18، 24 شهر.</p>
  </section>
 
  <section class="summary">
@@ -109,7 +103,6 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
  <section class="filter" id="editor">
   <h2 id="stageTitle">بيانات المرحلة الأولى</h2>
   <div id="statusBox" class="status">سجّل تاريخ التركيب ومدة الاستخدام.</div>
-
   <div class="row">
    <div>
     <label for="stageName">اسم / نوع المرحلة</label>
@@ -120,7 +113,6 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
     <input id="installDate" type="date">
    </div>
   </div>
-
   <div class="row">
    <div>
     <label for="duration">مدة الاستخدام</label>
@@ -135,10 +127,8 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
     </select>
    </div>
   </div>
-
   <label for="details">ملاحظات (اختياري)</label>
   <textarea id="details" rows="2" maxlength="250" placeholder="مثلاً: نوع الشمعة أو ملاحظة عن المياه"></textarea>
-
   <div class="actions">
    <button class="primary" id="saveBtn">حفظ بيانات المرحلة</button>
    <button class="secondary" id="changedBtn">تم تغيير الشمعة النهارده</button>
@@ -149,7 +139,6 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 
  <section class="filter">
   <h2>🔔 الإشعارات والنسخة الاحتياطية</h2>
-
   <div class="notify-toggle">
    <div>
     <strong id="notifyState">جاري معرفة حالة الإشعارات...</strong>
@@ -160,7 +149,6 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
     <span class="slider"></span>
    </label>
   </div>
-
   <div class="actions">
    <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
    <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
@@ -180,16 +168,17 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 
 const KEY='waterFilterTracker_multi_v2';
 const LEGACY_KEY='waterFilterTracker_v1';
+const DURATION_MIGRATION_KEY='waterFilterTracker_7stage_duration_migration_v3';
 
 const configs={
  '7':[
   ['المرحلة الأولى','PP',3],
   ['المرحلة الثانية','GAC',6],
   ['المرحلة الثالثة','CTO',6],
-  ['المرحلة الرابعة','RO',24],
-  ['المرحلة الخامسة','T33',12],
-  ['المرحلة السادسة','Mineral',18],
-  ['المرحلة السابعة','Post Carbon',18]
+  ['المرحلة الرابعة','RO',12],
+  ['المرحلة الخامسة','Post Carbon',12],
+  ['المرحلة السادسة','Mineral / Calcite',18],
+  ['المرحلة السابعة','Infrared / Bioceramic',24]
  ],
  '5':[
   ['المرحلة الأولى','PP',3],
@@ -245,6 +234,38 @@ function loadAll(){
 }
 
 let filters=loadAll();
+
+/* تحديث مدد فلتر 7 القديم مرة واحدة مع الحفاظ على تواريخ التركيب والملاحظات */
+try{
+ if(localStorage.getItem(DURATION_MIGRATION_KEY)!=='done'){
+  const durations=[3,6,6,12,12,18,24];
+  const oldNames=['PP','GAC','CTO','RO','T33','Mineral','Post Carbon'];
+  const newNames=[
+   'PP',
+   'GAC',
+   'CTO',
+   'RO',
+   'Post Carbon',
+   'Mineral / Calcite',
+   'Infrared / Bioceramic'
+  ];
+
+  filters['7'].forEach((stage,i)=>{
+   stage.duration=durations[i];
+   stage.unit='months';
+
+   if(stage.name===oldNames[i]){
+    stage.name=newNames[i];
+   }
+  });
+
+  localStorage.setItem(KEY,JSON.stringify(filters));
+  localStorage.setItem(DURATION_MIGRATION_KEY,'done');
+ }
+}catch(e){
+ console.log('تعذر تحديث مدد الشمعات القديمة',e);
+}
+
 let current='7';
 let selected=0;
 
@@ -337,7 +358,6 @@ function render(){
   if(info.state==='active')active++;
   if(info.state==='warn')soon++;
   if(info.state==='due')due++;
-
   const b=document.createElement('button');
   b.type='button';
   b.className='stage '+info.state+(i===selected?' selected':'');
@@ -353,7 +373,6 @@ function render(){
  document.getElementById('activeCount').textContent=active;
  document.getElementById('soonCount').textContent=soon;
  document.getElementById('dueCount').textContent=due;
-
  const s=list[selected];
  const info=dueInfo(s);
  const box=document.getElementById('statusBox');
@@ -364,7 +383,7 @@ function render(){
  document.getElementById('choose7').classList.toggle('active',current==='7');
  document.getElementById('choose5').classList.toggle('active',current==='5');
  document.getElementById('filterHint').textContent=current==='7'
-  ?'مدد التغيير الافتراضية: 3، 6، 6، 24، 12، 18، 18 شهر.'
+  ?'مدد التغيير الافتراضية: 3، 6، 6، 12، 12، 18، 24 شهر.'
   :'مدد التغيير الافتراضية: 3، 6، 6، 12، 12 شهر.';
 }
 
@@ -392,6 +411,7 @@ function switchFilter(type){
  fillEditor();
  render();
 }
+
 document.getElementById('choose7').onclick=()=>switchFilter('7');
 document.getElementById('choose5').onclick=()=>switchFilter('5');
 
@@ -442,7 +462,6 @@ function getNativeNotificationState(){
 document.getElementById('notificationsToggle').addEventListener('change',function(){
  const enabled=this.checked;
  const msg=document.getElementById('notifyMsg');
-
  try{
   if(window.AndroidBridge&&typeof window.AndroidBridge.setNotificationsEnabled==='function'){
    window.AndroidBridge.setNotificationsEnabled(enabled);

@@ -36,10 +36,10 @@ public class MainActivity extends Activity {
 
     public static final String PREFS = "filterprefs";
     public static final String DATA = "stagedata";
+    public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
 
     private static final int CREATE_BACKUP_REQUEST = 501;
     private static final int OPEN_BACKUP_REQUEST = 502;
-
     private String pendingBackupJson;
 
     @Override
@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
         web.getSettings().setDomStorageEnabled(true);
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient());
-        web.addJavascriptInterface(new Bridge(this), "AndroidBridge");
+        web.addJavascriptInterface(new Bridge(), "AndroidBridge");
 
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
@@ -80,36 +80,73 @@ public class MainActivity extends Activity {
                     "تذكيرات فلتر المياه",
                     NotificationManager.IMPORTANCE_HIGH
             );
-
             channel.setDescription("مواعيد تغيير شمعات فلتر المياه");
 
-            NotificationManager nm =
-                    (NotificationManager) getSystemService(
-                            Context.NOTIFICATION_SERVICE
-                    );
+            NotificationManager nm = (NotificationManager)
+                    getSystemService(Context.NOTIFICATION_SERVICE);
 
-            nm.createNotificationChannel(channel);
+            if (nm != null) nm.createNotificationChannel(channel);
         }
     }
 
+    public static boolean notificationsEnabled(Context ctx) {
+        return ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
+                .getBoolean(NOTIFICATIONS_ENABLED, true);
+    }
+
     public static void restoreSchedule(Context ctx) {
-        String data = ctx.getSharedPreferences(PREFS, 0)
+        if (!notificationsEnabled(ctx)) {
+            cancelAllSchedules(ctx);
+            return;
+        }
+
+        String data = ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
                 .getString(DATA, null);
 
-        if (data != null) {
-            schedule(ctx, data);
+        if (data != null) schedule(ctx, data);
+    }
+
+    public static void setNotifications(Context ctx, boolean enabled) {
+        ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit()
+                .putBoolean(NOTIFICATIONS_ENABLED, enabled)
+                .apply();
+
+        if (enabled) {
+            String data = ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
+                    .getString(DATA, null);
+            if (data != null) schedule(ctx, data);
+        } else {
+            cancelAllSchedules(ctx);
+        }
+    }
+
+    static void cancelAllSchedules(Context ctx) {
+        for (int i = 0; i < 7; i++) {
+            cancel(ctx, 700 + i * 10 + 1);
+            cancel(ctx, 700 + i * 10 + 2);
+        }
+
+        for (int i = 0; i < 5; i++) {
+            cancel(ctx, 500 + i * 10 + 1);
+            cancel(ctx, 500 + i * 10 + 2);
         }
     }
 
     public static void schedule(Context ctx, String json) {
+        // حفظ البيانات حتى لو الإشعارات متوقفة.
+        ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit()
+                .putString(DATA, json)
+                .apply();
+
+        if (!notificationsEnabled(ctx)) {
+            cancelAllSchedules(ctx);
+            return;
+        }
+
         try {
             JSONObject root = new JSONObject(json);
-
-            ctx.getSharedPreferences(PREFS, 0)
-                    .edit()
-                    .putString(DATA, json)
-                    .apply();
-
             AlarmManager am = (AlarmManager)
                     ctx.getSystemService(Context.ALARM_SERVICE);
 
@@ -119,13 +156,12 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             try {
                 JSONArray old = new JSONArray(json);
-
                 JSONObject wrapper = new JSONObject();
                 wrapper.put("7", old);
 
                 String converted = wrapper.toString();
 
-                ctx.getSharedPreferences(PREFS, 0)
+                ctx.getSharedPreferences(PREFS, MODE_PRIVATE)
                         .edit()
                         .putString(DATA, converted)
                         .apply();
@@ -143,11 +179,8 @@ public class MainActivity extends Activity {
     }
 
     static void scheduleFilter(
-            Context ctx,
-            AlarmManager am,
-            JSONArray stages,
-            int baseId
-    ) {
+            Context ctx, AlarmManager am, JSONArray stages, int baseId) {
+
         int count = baseId == 700 ? 7 : 5;
 
         for (int i = 0; i < count; i++) {
@@ -196,12 +229,9 @@ public class MainActivity extends Activity {
                 long dueTime = due.getTimeInMillis();
 
                 String filterName = baseId == 700
-                        ? "فلتر 7 مراحل"
-                        : "فلتر 5 مراحل";
+                        ? "فلتر 7 مراحل" : "فلتر 5 مراحل";
 
-                String label = s.optString(
-                        "label", "المرحلة " + (i + 1)
-                );
+                String label = s.optString("label", "المرحلة " + (i + 1));
                 String name = s.optString("name", "الشمعة");
                 String title = filterName + " — " + label + " — " + name;
 
@@ -220,21 +250,15 @@ public class MainActivity extends Activity {
                 }
 
             } catch (Exception e) {
-                android.util.Log.e(
-                        "WaterFilter", "stage " + i, e
-                );
+                android.util.Log.e("WaterFilter", "stage " + i, e);
             }
         }
     }
 
     static void set(
-            Context c,
-            AlarmManager am,
-            long at,
-            int id,
-            String title,
-            String message
-    ) {
+            Context c, AlarmManager am, long at, int id,
+            String title, String message) {
+
         Intent in = new Intent(c, ReminderReceiver.class);
         in.putExtra("id", id);
         in.putExtra("title", title);
@@ -250,17 +274,14 @@ public class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT >= 31) {
                 if (am.canScheduleExactAlarms()) {
                     am.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP, at, pi
-                    );
+                            AlarmManager.RTC_WAKEUP, at, pi);
                 } else {
                     am.setAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP, at, pi
-                    );
+                            AlarmManager.RTC_WAKEUP, at, pi);
                 }
             } else if (Build.VERSION.SDK_INT >= 23) {
                 am.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP, at, pi
-                );
+                        AlarmManager.RTC_WAKEUP, at, pi);
             } else if (Build.VERSION.SDK_INT >= 19) {
                 am.setExact(AlarmManager.RTC_WAKEUP, at, pi);
             } else {
@@ -269,9 +290,7 @@ public class MainActivity extends Activity {
         } catch (SecurityException e) {
             android.util.Log.e("WaterFilter", "Alarm permission", e);
             try {
-                am.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP, at, pi
-                );
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
             } catch (Exception ex) {
                 android.util.Log.e("WaterFilter", "Fallback alarm", ex);
             }
@@ -290,20 +309,17 @@ public class MainActivity extends Activity {
         AlarmManager am = (AlarmManager)
                 c.getSystemService(Context.ALARM_SERVICE);
 
-        am.cancel(pi);
+        if (am != null) am.cancel(pi);
         pi.cancel();
     }
 
     @Override
     protected void onActivityResult(
-            int requestCode, int resultCode, Intent data
-    ) {
+            int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode != RESULT_OK || data == null ||
-                data.getData() == null) {
-            return;
-        }
+                data.getData() == null) return;
 
         Uri uri = data.getData();
 
@@ -315,17 +331,14 @@ public class MainActivity extends Activity {
                 out.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
                 out.close();
 
-                Toast.makeText(
-                        this, "تم حفظ النسخة الاحتياطية",
-                        Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(this, "تم حفظ النسخة الاحتياطية",
+                        Toast.LENGTH_LONG).show();
 
             } catch (Exception e) {
-                Toast.makeText(
-                        this, "فشل حفظ النسخة الاحتياطية",
-                        Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(this, "فشل حفظ النسخة الاحتياطية",
+                        Toast.LENGTH_LONG).show();
             }
+
             pendingBackupJson = null;
 
         } else if (requestCode == OPEN_BACKUP_REQUEST) {
@@ -338,42 +351,55 @@ public class MainActivity extends Activity {
                 byte[] bytes = new byte[4096];
                 int n;
 
-                while ((n = in.read(bytes)) != -1) {
-                    buffer.write(bytes, 0, n);
-                }
+                while ((n = in.read(bytes)) != -1) buffer.write(bytes, 0, n);
                 in.close();
 
                 String json = new String(
-                        buffer.toByteArray(), StandardCharsets.UTF_8
-                );
+                        buffer.toByteArray(), StandardCharsets.UTF_8);
 
                 if (web != null) {
                     web.evaluateJavascript(
                             "window.onNativeBackupImported(" +
-                                    JSONObject.quote(json) + ");",
-                            null
-                    );
+                                    JSONObject.quote(json) + ");", null);
                 }
 
             } catch (Exception e) {
-                Toast.makeText(
-                        this, "فشل قراءة ملف النسخة الاحتياطية",
-                        Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(this, "فشل قراءة ملف النسخة الاحتياطية",
+                        Toast.LENGTH_LONG).show();
             }
         }
     }
 
     public class Bridge {
-        Context c;
-
-        Bridge(Context x) {
-            c = x;
-        }
 
         @JavascriptInterface
         public void updateSchedule(String json) {
-            schedule(c, json);
+            schedule(MainActivity.this, json);
+        }
+
+        @JavascriptInterface
+        public boolean getNotificationsEnabled() {
+            return notificationsEnabled(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void setNotificationsEnabled(boolean enabled) {
+            setNotifications(MainActivity.this, enabled);
+
+            runOnUiThread(() -> {
+                if (web != null) {
+                    web.evaluateJavascript(
+                            "window.onNativeNotificationStateChanged(" +
+                                    enabled + ");", null);
+                }
+
+                Toast.makeText(
+                        MainActivity.this,
+                        enabled ? "تم تشغيل الإشعارات" :
+                                "تم إيقاف الإشعارات",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
         }
 
         @JavascriptInterface
@@ -385,8 +411,7 @@ public class MainActivity extends Activity {
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("application/json");
                 intent.putExtra(
-                        Intent.EXTRA_TITLE, "نسخة-فلتر-المياه.json"
-                );
+                        Intent.EXTRA_TITLE, "نسخة-فلتر-المياه.json");
 
                 startActivityForResult(intent, CREATE_BACKUP_REQUEST);
             });
@@ -400,8 +425,7 @@ public class MainActivity extends Activity {
                 intent.setType("*/*");
                 intent.putExtra(
                         Intent.EXTRA_MIME_TYPES,
-                        new String[]{"application/json", "text/json"}
-                );
+                        new String[]{"application/json", "text/json"});
 
                 startActivityForResult(intent, OPEN_BACKUP_REQUEST);
             });

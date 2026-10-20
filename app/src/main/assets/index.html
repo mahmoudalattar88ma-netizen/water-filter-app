@@ -54,6 +54,15 @@ button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:bo
 footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding:8px 0 24px}
 .credit{display:block;color:var(--navy);font-weight:bold;font-size:12px;margin-top:5px}
 .hidden{display:none!important}
+.notify-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#f2f7fb;border-radius:13px;margin:12px 0}
+.notify-toggle strong{font-size:14px}
+.switch{position:relative;width:58px;height:32px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#aab6c1;border-radius:30px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;width:24px;height:24px;right:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.slider{background:var(--green)}
+.switch input:checked+.slider:before{transform:translateX(-26px)}
+.switch input:focus-visible+.slider{outline:2px solid var(--blue);outline-offset:3px}
 @media(min-width:540px){
 .stages.seven{grid-template-columns:repeat(7,minmax(0,1fr))}
 .stages.five{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -122,12 +131,22 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 <button class="secondary" id="changedBtn">تم تغيير الشمعة النهارده</button>
 <button class="danger" id="clearBtn">مسح بيانات المرحلة</button>
 </div>
-<p class="note">التنبيه قبل ميعاد التغيير بيومين، وتنبيه يوم الاستحقاق. لازم تسمح للتطبيق بإرسال الإشعارات.</p>
+<p class="note">التنبيه قبل ميعاد التغيير بيومين، وتنبيه يوم الاستحقاق الساعة 9 صباحًا. لازم تسمح للتطبيق بإرسال الإشعارات من إعدادات الجهاز.</p>
 </section>
 
 <section class="filter">
 <h2>🔔 الإشعارات والنسخة الاحتياطية</h2>
-<p class="note">تُرسل مواعيد الفلترين إلى أندرويد عند الحفظ أو تحديث المواعيد. إشعارات الخلفية تعتمد أيضًا على إعدادات الجهاز وملفات أندرويد.</p>
+<div class="notify-toggle">
+<div>
+<strong id="notifyState">جاري معرفة حالة الإشعارات...</strong>
+<div class="note" id="notifyDescription">تقدر توقف التذكيرات وترجع تشغلها وقت ما تحب.</div>
+</div>
+<label class="switch" aria-label="تشغيل أو إيقاف الإشعارات">
+<input type="checkbox" id="notificationsToggle">
+<span class="slider"></span>
+</label>
+</div>
+<p class="note">لما توقف الإشعارات، مواعيد التذكير المجدولة هتتلغي. ولما تشغّلها، التطبيق هيعيد جدولة المواعيد المحفوظة تلقائيًا.</p>
 <div class="actions">
 <button class="primary" id="notifyBtn">تحديث مواعيد الإشعارات</button>
 <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
@@ -179,10 +198,7 @@ if(!s||typeof s!=='object')return base;
 const units=['days','months','years'];
 let duration=Number(s.duration)||base.duration;
 let unit=units.includes(s.unit)?s.unit:base.unit;
-if(legacy&&!s.date){
-duration=base.duration;
-unit='months';
-}
+if(legacy&&!s.date){duration=base.duration;unit='months';}
 return {
 label:String(s.label||base.label).slice(0,35),
 name:String(s.name||base.name).slice(0,35),
@@ -218,6 +234,7 @@ return result;
 let filters=loadAll();
 let current='7';
 let selected=0;
+let nativeApp=false;
 
 function saveAll(){
 try{
@@ -235,9 +252,7 @@ if(window.AndroidBridge&&typeof window.AndroidBridge.updateSchedule==='function'
 window.AndroidBridge.updateSchedule(JSON.stringify(filters));
 return true;
 }
-}catch(e){
-console.log('تعذر تحديث مواعيد أندرويد',e);
-}
+}catch(e){console.log('تعذر تحديث مواعيد أندرويد',e);}
 return false;
 }
 
@@ -370,7 +385,7 @@ document.getElementById('choose5').onclick=()=>switchFilter('5');
 document.getElementById('saveBtn').onclick=()=>{
 readEditor();
 saveAll();
-document.getElementById('notifyMsg').textContent='تم حفظ بيانات الفلتر الحالي وتحديث مواعيد التذكير.';
+document.getElementById('notifyMsg').textContent='تم حفظ بيانات المرحلة وتحديث مواعيد التذكير.';
 };
 
 document.getElementById('changedBtn').onclick=()=>{
@@ -390,58 +405,81 @@ document.getElementById('notifyMsg').textContent='تم مسح بيانات ال�
 }
 };
 
-document.getElementById('notifyBtn').onclick=()=>{
+function setToggleUI(enabled){
+const toggle=document.getElementById('notificationsToggle');
+toggle.checked=!!enabled;
+document.getElementById('notifyState').textContent=enabled?'الإشعارات شغالة':'الإشعارات متوقفة';
+document.getElementById('notifyDescription').textContent=enabled
+?'التطبيق هيذكّرك قبل موعد التغيير بيومين ويوم الاستحقاق.'
+:'مش هتوصلك تذكيرات لحد ما تشغّل الإشعارات.';
+}
+
+function getNativeNotificationState(){
+try{
+if(window.AndroidBridge&&typeof window.AndroidBridge.getNotificationsEnabled==='function'){
+nativeApp=true;
+setToggleUI(window.AndroidBridge.getNotificationsEnabled());
+return;
+}
+}catch(e){}
+nativeApp=false;
+setToggleUI(false);
+document.getElementById('notifyDescription').textContent='الإشعارات بالخلفية تحتاج نسخة APK من التطبيق.';
+}
+
+document.getElementById('notificationsToggle').addEventListener('change',function(){
+const enabled=this.checked;
 const msg=document.getElementById('notifyMsg');
-if(window.AndroidBridge&&typeof window.AndroidBridge.updateSchedule==='function'){
-const ok=updateNativeSchedule();
-msg.textContent=ok?'تم إرسال بيانات الفلترين إلى أندرويد.':'تعذر تحديث مواعيد أندرويد. اقفل التطبيق وافتحه تاني.';
+
+if(!window.AndroidBridge||typeof window.AndroidBridge.setNotificationsEnabled!=='function'){
+setToggleUI(false);
+msg.textContent='زر الإشعارات الفعلي متاح داخل نسخة APK، مش من صفحة المتصفح.';
 return;
 }
-if(!('Notification'in window)){
-msg.textContent='إشعارات المتصفح غير مدعومة هنا. يلزم استخدام نسخة APK لإشعارات الخلفية.';
-return;
+
+this.disabled=true;
+try{
+window.AndroidBridge.setNotificationsEnabled(enabled);
+setToggleUI(enabled);
+msg.textContent=enabled
+?'تم طلب تشغيل الإشعارات وإعادة جدولة المواعيد المحفوظة.'
+:'تم طلب إيقاف الإشعارات وإلغاء المواعيد المجدولة.';
+}catch(e){
+getNativeNotificationState();
+msg.textContent='تعذر تغيير حالة الإشعارات. جرّب إغلاق التطبيق وفتحه.';
+}finally{
+this.disabled=false;
 }
-if(Notification.permission==='granted'){
-checkNotifications();
-msg.textContent='إشعارات المتصفح مسموحة، لكنها مش مضمونة لو المتصفح مقفول. استخدم APK للتذكير في الخلفية.';
-}else{
-Notification.requestPermission().then(p=>{
-msg.textContent=p==='granted'?'تم السماح بإشعارات المتصفح، لكن التذكير بالخلفية يعتمد على دعم المتصفح.':'الإشعارات غير مسموح بها. فعّلها من إعدادات الجهاز.';
-checkNotifications();
-}).catch(()=>msg.textContent='تعذر طلب إذن الإشعارات.');
-}
+});
+
+window.onNativeNotificationStateChanged=function(enabled){
+setToggleUI(!!enabled);
 };
 
-function checkNotifications(){
-if(!('Notification'in window)||Notification.permission!=='granted')return;
-const stamp=localDateString();
-Object.keys(filters).forEach(type=>filters[type].forEach((s,i)=>{
-if(!s.date)return;
-const info=dueInfo(s);
-if(info.left===2||info.left===0){
-const k='wf_notice_'+type+'_'+i+'_'+s.date+'_'+stamp;
-try{
-if(localStorage.getItem(k))return;
-const msg=info.left===0?'ميعاد تغييرها النهارده':'فاضل يومين على تغييرها';
-new Notification('فلتر المياه — '+s.label,{
-body:`فلتر ${type} مراحل — ${s.name||'المرحلة'}: ${msg}. موعد التغيير ${fmt(info.due)}`
-});
-localStorage.setItem(k,'1');
-}catch(e){}
+document.getElementById('notifyBtn').onclick=()=>{
+const msg=document.getElementById('notifyMsg');
+if(!window.AndroidBridge||typeof window.AndroidBridge.updateSchedule!=='function'){
+msg.textContent='افتح نسخة APK لتحديث مواعيد إشعارات أندرويد.';
+return;
 }
-}));
+if(!document.getElementById('notificationsToggle').checked){
+msg.textContent='الإشعارات متوقفة. شغّل الزر الأول لو عاوز تفعّل التذكيرات.';
+return;
 }
+const ok=updateNativeSchedule();
+msg.textContent=ok
+?'تم تحديث مواعيد إشعارات الفلترين.'
+:'تعذر تحديث المواعيد. اقفل التطبيق وافتحه تاني.';
+};
 
 document.getElementById('exportBtn').onclick=()=>{
 try{
 if(window.AndroidBridge&&typeof window.AndroidBridge.exportBackup==='function'){
 window.AndroidBridge.exportBackup(JSON.stringify(filters,null,2));
 }else{
-alert('افتح التطبيق من نسخة APK الجديدة.');
+alert('افتح التطبيق من نسخة APK الجديدة لتصدير النسخة الاحتياطية.');
 }
-}catch(e){
-alert('تعذر تصدير النسخة الاحتياطية.');
-}
+}catch(e){alert('تعذر تصدير النسخة الاحتياطية.');}
 };
 
 document.getElementById('importBtn').onclick=()=>{
@@ -451,14 +489,11 @@ window.AndroidBridge.importBackup();
 }else{
 document.getElementById('importFile').click();
 }
-}catch(e){
-alert('تعذر فتح ملف النسخة الاحتياطية.');
-}
+}catch(e){alert('تعذر فتح ملف النسخة الاحتياطية.');}
 };
 
-window.onNativeBackupImported=function(raw){
-try{
-const x=JSON.parse(raw);
+function applyBackup(raw){
+const x=typeof raw==='string'?JSON.parse(raw):raw;
 if(Array.isArray(x)&&x.length===7){
 filters['7']=x.map((s,i)=>normalizeStage(s,'7',i));
 }else if(x&&Array.isArray(x['7'])&&Array.isArray(x['5'])&&x['7'].length===7&&x['5'].length===5){
@@ -469,6 +504,11 @@ throw new Error('invalid backup');
 }
 saveAll();
 fillEditor();
+}
+
+window.onNativeBackupImported=function(raw){
+try{
+applyBackup(raw);
 alert('تم استيراد البيانات وتحديث مواعيد التذكير.');
 }catch(e){
 alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');
@@ -479,17 +519,7 @@ document.getElementById('importFile').onchange=async e=>{
 const f=e.target.files[0];
 if(!f)return;
 try{
-const x=JSON.parse(await f.text());
-if(Array.isArray(x)&&x.length===7){
-filters['7']=x.map((s,i)=>normalizeStage(s,'7',i));
-}else if(x&&Array.isArray(x['7'])&&Array.isArray(x['5'])&&x['7'].length===7&&x['5'].length===5){
-filters['7']=x['7'].map((s,i)=>normalizeStage(s,'7',i));
-filters['5']=x['5'].map((s,i)=>normalizeStage(s,'5',i));
-}else{
-throw new Error('invalid backup');
-}
-saveAll();
-fillEditor();
+applyBackup(await f.text());
 alert('تم استيراد البيانات وتحديث مواعيد التذكير.');
 }catch(err){
 alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');
@@ -500,7 +530,7 @@ e.target.value='';
 fillEditor();
 render();
 updateNativeSchedule();
+getNativeNotificationState();
 </script>
 </body>
-  </html>
-  
+</html>

@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,61 +6,298 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0868b5">
 <title>متابع فلتر المياه</title>
+
 <style>
-:root{--blue:#0868b5;--navy:#084b86;--bg:#f2f7fb;--green:#168653;--orange:#e68a00;--red:#d92d36;--muted:#607386}
+:root{
+--blue:#0868b5;
+--navy:#084b86;
+--bg:#f2f7fb;
+--green:#168653;
+--orange:#e68a00;
+--red:#d92d36;
+--muted:#607386;
+--image-bg:#EAF2F8;
+}
+
 *{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:#16324b}
-header{background:linear-gradient(135deg,var(--blue),var(--navy));color:#fff;padding:22px 16px 28px;border-radius:0 0 24px 24px}
+
+body{
+margin:0;
+font-family:Tahoma,Arial,sans-serif;
+background:var(--bg);
+color:#16324b;
+}
+
+header{
+background:linear-gradient(135deg,var(--blue),var(--navy));
+color:#fff;
+padding:22px 16px 28px;
+border-radius:0 0 24px 24px;
+}
+
 h1{margin:0;font-size:23px}
 header p{margin:7px 0 0;opacity:.9;font-size:13px}
+
 main{max-width:760px;margin:auto;padding:14px}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:-12px}
-.stat,.filter{background:#fff;border-radius:14px;padding:12px 8px;box-shadow:0 3px 12px #153c5b10}
+
+.summary{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+margin-top:-12px;
+}
+
+.stat,.filter{
+background:#fff;
+border-radius:14px;
+padding:12px 8px;
+box-shadow:0 3px 12px #153c5b10;
+}
+
 .stat{text-align:center}
 .stat b{display:block;font-size:22px}
 .stat span{font-size:11px;color:var(--muted)}
-.filter{border-radius:18px;margin:14px 0;padding:16px}
+
+.filter{
+border-radius:18px;
+margin:14px 0;
+padding:16px;
+}
+
 .filter h2{font-size:17px;margin:0 0 13px}
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.choice{background:#eaf3fa;color:var(--navy);border:2px solid transparent;padding:14px 8px;border-radius:13px;font:inherit;font-weight:bold}
-.choice.active{background:#e8f5ee;border-color:var(--green);color:#116b42}
-.stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.stage{border:1px solid #dce7ef;background:#fff;border-radius:13px;padding:8px 4px;cursor:pointer;text-align:center;min-height:132px;color:#16324b;overflow:hidden}
-.cartridge-img{display:block;width:100%;height:82px;object-fit:contain;border-radius:8px;background:#fff;margin:0 auto 7px}
-.stage strong{display:block;font-size:12px}
-.stage small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px;background:var(--green)}
-.stage.warn{border-color:#f0c16d;background:#fffaf0}
+
+.choices{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.choice{
+background:#eaf3fa;
+color:var(--navy);
+border:2px solid transparent;
+padding:14px 8px;
+border-radius:13px;
+font:inherit;
+font-weight:bold;
+}
+
+.choice.active{
+background:#e8f5ee;
+border-color:var(--green);
+color:#116b42;
+}
+
+.stages{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:9px;
+}
+
+.stage{
+border:1px solid #dce7ef;
+background:#fff;
+border-radius:13px;
+padding:8px 4px;
+cursor:pointer;
+text-align:center;
+min-height:132px;
+color:#16324b;
+overflow:hidden;
+}
+
+/* خلفية صور الشمعات الجديدة */
+.cartridge-img{
+display:block;
+width:100%;
+height:82px;
+object-fit:contain;
+object-position:center;
+border-radius:8px;
+background-color:var(--image-bg);
+margin:0 auto 7px;
+padding:4px;
+}
+
+.stage strong{
+display:block;
+font-size:12px;
+}
+
+.stage small{
+display:block;
+font-size:10px;
+color:var(--muted);
+margin-top:4px;
+}
+
+.dot{
+display:inline-block;
+width:8px;
+height:8px;
+border-radius:50%;
+margin-left:4px;
+background:var(--green);
+}
+
+.stage.warn{
+border-color:#f0c16d;
+background:#fffaf0;
+}
+
 .stage.warn .dot{background:var(--orange)}
-.stage.due{border-color:#f2a2a6;background:#fff3f3}
+
+.stage.due{
+border-color:#f2a2a6;
+background:#fff3f3;
+}
+
 .stage.due .dot{background:var(--red)}
 .stage.unknown .dot{background:#9aa8b4}
-.stage.selected{box-shadow:0 0 0 2px var(--blue)}
-.row{display:flex;gap:10px;flex-wrap:wrap}
+
+.stage.selected{
+box-shadow:0 0 0 2px var(--blue);
+}
+
+.row{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
 .row>*{flex:1;min-width:130px}
-label{display:block;font-size:12px;color:#3f5a70;margin:12px 0 5px}
-input,select,textarea{width:100%;border:1px solid #cfdae4;border-radius:10px;padding:11px;font:inherit;font-size:14px;background:#fff;color:#17334b}
-button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:bold;cursor:pointer}
+
+label{
+display:block;
+font-size:12px;
+color:#3f5a70;
+margin:12px 0 5px;
+}
+
+input,select,textarea{
+width:100%;
+border:1px solid #cfdae4;
+border-radius:10px;
+padding:11px;
+font:inherit;
+font-size:14px;
+background:#fff;
+color:#17334b;
+}
+
+button{
+border:0;
+border-radius:11px;
+padding:12px 15px;
+font:inherit;
+font-weight:bold;
+cursor:pointer;
+}
+
 .primary{background:var(--blue);color:#fff}
 .secondary{background:#eaf3fa;color:var(--navy)}
 .danger{background:#fff0f0;color:var(--red)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+.actions{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:14px;
+}
+
 .actions button{flex:1;min-width:140px}
-.status{border-radius:11px;padding:10px 12px;background:#eaf7ef;color:#116b42;font-size:13px;margin:12px 0}
+
+.status{
+border-radius:11px;
+padding:10px 12px;
+background:#eaf7ef;
+color:#116b42;
+font-size:13px;
+margin:12px 0;
+}
+
 .status.warn{background:#fff5df;color:#8b5700}
 .status.due{background:#ffeded;color:#b11e29}
-.note{font-size:12px;color:var(--muted);line-height:1.7}
-footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding:8px 0 24px}
-.credit{display:block;color:var(--navy);font-weight:bold;font-size:12px;margin-top:5px}
+
+.note{
+font-size:12px;
+color:var(--muted);
+line-height:1.7;
+}
+
+footer{
+text-align:center;
+color:var(--muted);
+font-size:11px;
+line-height:2;
+padding:8px 0 24px;
+}
+
+.credit{
+display:block;
+color:var(--navy);
+font-weight:bold;
+font-size:12px;
+margin-top:5px;
+}
+
 .hidden{display:none!important}
-.notify-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#f2f7fb;border-radius:13px;padding:13px;margin:12px 0}
-.notify-toggle strong{display:block;font-size:14px}
-.switch{position:relative;display:inline-block;width:54px;height:30px;flex:0 0 54px;margin:0}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;cursor:pointer;background:#aab7c3;border-radius:30px;transition:.2s}
-.slider:before{content:"";position:absolute;width:22px;height:22px;right:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
+
+.notify-toggle{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:14px;
+background:#f2f7fb;
+border-radius:13px;
+padding:13px;
+margin:12px 0;
+}
+
+.notify-toggle strong{
+display:block;
+font-size:14px;
+}
+
+.switch{
+position:relative;
+display:inline-block;
+width:54px;
+height:30px;
+flex:0 0 54px;
+margin:0;
+}
+
+.switch input{
+opacity:0;
+width:0;
+height:0;
+}
+
+.slider{
+position:absolute;
+inset:0;
+cursor:pointer;
+background:#aab7c3;
+border-radius:30px;
+transition:.2s;
+}
+
+.slider:before{
+content:"";
+position:absolute;
+width:22px;
+height:22px;
+right:4px;
+top:4px;
+background:#fff;
+border-radius:50%;
+transition:.2s;
+}
+
 .switch input:checked+.slider{background:var(--green)}
 .switch input:checked+.slider:before{transform:translateX(-24px)}
+
 @media(min-width:540px){
 .stages.seven{grid-template-columns:repeat(7,minmax(0,1fr))}
 .stages.five{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -68,11 +306,13 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 }
 </style>
 </head>
+
 <body>
 <header>
 <h1>💧 متابع فلتر المياه</h1>
 <p>تابع مواعيد تغيير الشمعات للفلترين بشكل مستقل</p>
 </header>
+
 <main>
 <section class="filter">
 <h2>اختار الفلتر</h2>
@@ -98,6 +338,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 <section class="filter" id="editor">
 <h2 id="stageTitle">بيانات المرحلة الأولى</h2>
 <div id="statusBox" class="status">سجّل تاريخ التركيب ومدة الاستخدام.</div>
+
 <div class="row">
 <div>
 <label for="stageName">اسم / نوع المرحلة</label>
@@ -108,6 +349,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 <input id="installDate" type="date">
 </div>
 </div>
+
 <div class="row">
 <div>
 <label for="duration">مدة الاستخدام</label>
@@ -122,33 +364,40 @@ footer{text-align:center;color:var(--muted);font-size:11px;line-height:2;padding
 </select>
 </div>
 </div>
+
 <label for="details">ملاحظات (اختياري)</label>
 <textarea id="details" rows="2" maxlength="250" placeholder="مثلاً: نوع الشمعة أو ملاحظة عن المياه"></textarea>
+
 <div class="actions">
 <button class="primary" id="saveBtn">حفظ بيانات المرحلة</button>
 <button class="secondary" id="changedBtn">تم تغيير الشمعة النهارده</button>
 <button class="danger" id="clearBtn">مسح بيانات المرحلة</button>
 </div>
+
 <p class="note">التنبيه قبل ميعاد التغيير بيومين، وتنبيه يوم الاستحقاق. لازم تسمح للتطبيق بإرسال الإشعارات من إعدادات الجهاز.</p>
 </section>
 
 <section class="filter">
 <h2>🔔 الإشعارات والنسخة الاحتياطية</h2>
+
 <div class="notify-toggle">
 <div>
 <strong id="notifyState">جاري معرفة حالة الإشعارات...</strong>
 <div class="note" id="notifyDescription">تقدر توقف التذكيرات وترجع تشغلها وقت ما تحب.</div>
 </div>
+
 <label class="switch" aria-label="تشغيل أو إيقاف الإشعارات">
 <input type="checkbox" id="notificationsToggle">
 <span class="slider"></span>
 </label>
 </div>
+
 <div class="actions">
 <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
 <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
 <input class="hidden" id="importFile" type="file" accept="application/json">
 </div>
+
 <p id="notifyMsg" class="note" aria-live="polite"></p>
 </section>
 
@@ -165,7 +414,6 @@ const KEY='waterFilterTracker_multi_v2';
 const LEGACY_KEY='waterFilterTracker_v1';
 const MIGRATION_KEY='waterFilterTracker_duration_migration_v4';
 
-/* الصور موجودة في نفس مجلد index.html داخل assets */
 const stageImages7=[
 'pp.jpg',
 'gac.jpg',
@@ -572,4 +820,4 @@ updateNativeSchedule();
 getNativeNotificationState();
 </script>
 </body>
-  </html>
+</html>

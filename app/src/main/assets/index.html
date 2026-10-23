@@ -212,6 +212,8 @@ background:#eaf7ef;
 color:#116b42;
 font-size:13px;
 margin:12px 0;
+direction:rtl;
+unicode-bidi:plaintext;
 }
 
 .status.warn{background:#fff5df;color:#8b5700}
@@ -577,12 +579,12 @@ const left=dayDiff(due,new Date());
 return {state:left<0?'due':left<=2?'warn':'active',left,due};
 }
 
-/* تعديل عرض التاريخ: يوم/شهر/سنة */
+/* عرض التاريخ يوم/شهر/سنة مع عزل اتجاه الأرقام */
 function fmt(d){
 const day=String(d.getDate()).padStart(2,'0');
 const month=String(d.getMonth()+1).padStart(2,'0');
-const year=d.getFullYear();
-return `${day}/${month}/${year}`;
+const year=String(d.getFullYear());
+return '\u2066'+day+'/'+month+'/'+year+'\u2069';
 }
 
 function statusText(s){

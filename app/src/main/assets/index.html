@@ -36,7 +36,6 @@ border-radius:0 0 24px 24px;
 
 h1{margin:0;font-size:23px}
 header p{margin:7px 0 0;opacity:.9;font-size:13px}
-
 main{max-width:760px;margin:auto;padding:14px}
 
 .summary{
@@ -117,11 +116,7 @@ margin:0 auto 7px;
 padding:4px;
 }
 
-.stage strong{
-display:block;
-font-size:12px;
-}
-
+.stage strong{display:block;font-size:12px}
 .stage small{
 display:block;
 font-size:10px;
@@ -138,24 +133,12 @@ margin-left:4px;
 background:var(--green);
 }
 
-.stage.warn{
-border-color:#f0c16d;
-background:#fffaf0;
-}
-
+.stage.warn{border-color:#f0c16d;background:#fffaf0}
 .stage.warn .dot{background:var(--orange)}
-
-.stage.due{
-border-color:#f2a2a6;
-background:#fff3f3;
-}
-
+.stage.due{border-color:#f2a2a6;background:#fff3f3}
 .stage.due .dot{background:var(--red)}
 .stage.unknown .dot{background:#9aa8b4}
-
-.stage.selected{
-box-shadow:0 0 0 2px var(--blue);
-}
+.stage.selected{box-shadow:0 0 0 2px var(--blue)}
 
 .row{
 display:flex;
@@ -181,6 +164,17 @@ font:inherit;
 font-size:14px;
 background:#fff;
 color:#17334b;
+}
+
+/* إصلاح اتجاه حقل التاريخ */
+#installDate{
+direction:ltr !important;
+text-align:left !important;
+unicode-bidi:isolate;
+display:block;
+width:100%;
+min-width:0;
+-webkit-appearance:auto;
 }
 
 button{
@@ -254,10 +248,7 @@ padding:13px;
 margin:12px 0;
 }
 
-.notify-toggle strong{
-display:block;
-font-size:14px;
-}
+.notify-toggle strong{display:block;font-size:14px}
 
 .switch{
 position:relative;
@@ -346,7 +337,7 @@ transition:.2s;
 </div>
 <div>
 <label for="installDate">تاريخ التركيب</label>
-<input id="installDate" type="date">
+<input id="installDate" type="date" dir="ltr">
 </div>
 </div>
 
@@ -379,13 +370,11 @@ transition:.2s;
 
 <section class="filter">
 <h2>🔔 الإشعارات والنسخة الاحتياطية</h2>
-
 <div class="notify-toggle">
 <div>
 <strong id="notifyState">جاري معرفة حالة الإشعارات...</strong>
 <div class="note" id="notifyDescription">تقدر توقف التذكيرات وترجع تشغلها وقت ما تحب.</div>
 </div>
-
 <label class="switch" aria-label="تشغيل أو إيقاف الإشعارات">
 <input type="checkbox" id="notificationsToggle">
 <span class="slider"></span>
@@ -397,7 +386,6 @@ transition:.2s;
 <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
 <input class="hidden" id="importFile" type="file" accept="application/json">
 </div>
-
 <p id="notifyMsg" class="note" aria-live="polite"></p>
 </section>
 
@@ -415,20 +403,12 @@ const LEGACY_KEY='waterFilterTracker_v1';
 const MIGRATION_KEY='waterFilterTracker_duration_migration_v4';
 
 const stageImages7=[
-'pp-v2.jpg',
-'gac-v2.jpg',
-'cto-v2.jpg',
-'ro-v2.jpg',
-'t33-v2.jpg',
-'mineral-v2.jpg',
-'bioceramic-v2.jpg'
+'pp-v2.jpg','gac-v2.jpg','cto-v2.jpg','ro-v2.jpg',
+'t33-v2.jpg','mineral-v2.jpg','bioceramic-v2.jpg'
 ];
 
 const stageImages5=[
-'pp-v2.jpg',
-'gac-v2.jpg',
-'cto-v2.jpg',
-'t33-v2.jpg',
+'pp-v2.jpg','gac-v2.jpg','cto-v2.jpg','t33-v2.jpg',
 'bioceramic-v2.jpg'
 ];
 
@@ -453,14 +433,7 @@ const configs={
 
 function defaultStage(type,i){
 const c=configs[type][i];
-return {
-label:c[0],
-name:c[1],
-duration:c[2],
-unit:'months',
-date:'',
-details:''
-};
+return {label:c[0],name:c[1],duration:c[2],unit:'months',date:'',details:''};
 }
 
 function normalizeStage(s,type,i){
@@ -490,7 +463,6 @@ const r={
 '7':configs['7'].map((_,i)=>normalizeStage(saved['7'][i],'7',i)),
 '5':configs['5'].map((_,i)=>normalizeStage(saved['5'][i],'5',i))
 };
-
 if(!localStorage.getItem(MIGRATION_KEY)){
 if(r['7'][3].unit==='months'&&r['7'][3].duration===24)r['7'][3].duration=12;
 if(r['7'][6].unit==='months'&&r['7'][6].duration===18)r['7'][6].duration=24;
@@ -501,9 +473,7 @@ localStorage.setItem(KEY,JSON.stringify(r));
 }
 return r;
 }
-}catch(e){
-console.log('تعذر قراءة البيانات المحفوظة',e);
-}
+}catch(e){console.log('تعذر قراءة البيانات المحفوظة',e);}
 
 try{
 const old=JSON.parse(localStorage.getItem(LEGACY_KEY));
@@ -525,18 +495,14 @@ if(window.AndroidBridge&&typeof AndroidBridge.updateSchedule==='function'){
 AndroidBridge.updateSchedule(JSON.stringify(filters));
 return true;
 }
-}catch(e){
-console.log(e);
-}
+}catch(e){console.log(e);}
 return false;
 }
 
 function saveAll(){
 try{
 localStorage.setItem(KEY,JSON.stringify(filters));
-}catch(e){
-alert('تعذر حفظ البيانات. تأكد من وجود مساحة كافية على الجهاز.');
-}
+}catch(e){alert('تعذر حفظ البيانات. تأكد من وجود مساحة كافية على الجهاز.');}
 render();
 updateNativeSchedule();
 }
@@ -549,7 +515,6 @@ function addDuration(date,amount,unit){
 const p=date.split('-').map(Number);
 const d=new Date(p[0],p[1]-1,p[2],12,0,0,0);
 const n=Number(amount);
-
 if(unit==='days'){
 d.setDate(d.getDate()+n);
 }else if(unit==='months'){
@@ -579,12 +544,12 @@ const left=dayDiff(due,new Date());
 return {state:left<0?'due':left<=2?'warn':'active',left,due};
 }
 
-/* عرض التاريخ يوم/شهر/سنة مع عزل اتجاه الأرقام */
+/* عرض التاريخ يوم/شهر/سنة */
 function fmt(d){
 const day=String(d.getDate()).padStart(2,'0');
 const month=String(d.getMonth()+1).padStart(2,'0');
 const year=String(d.getFullYear());
-return '\u2066'+day+'/'+month+'/'+year+'\u2069';
+return day+'/'+month+'/'+year;
 }
 
 function statusText(s){
@@ -598,11 +563,7 @@ return `🟢 المرحلة شغالة. فاضل ${i.left} يوم — موعد �
 
 function esc(s){
 return String(s).replace(/[&<>"']/g,c=>({
-'&':'&amp;',
-'<':'&lt;',
-'>':'&gt;',
-'"':'&quot;',
-"'":'&#39;'
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[c]));
 }
 
@@ -611,7 +572,6 @@ const list=filters[current];
 const holder=document.getElementById('stages');
 holder.innerHTML='';
 holder.className='stages '+(current==='7'?'seven':'five');
-
 let active=0,soon=0,due=0;
 
 list.forEach((s,i)=>{
@@ -623,7 +583,6 @@ if(inf.state==='due')due++;
 const b=document.createElement('button');
 b.type='button';
 b.className='stage '+inf.state+(i===selected?' selected':'');
-
 const image=(current==='7'?stageImages7:stageImages5)[i];
 
 b.innerHTML=`
@@ -631,13 +590,7 @@ b.innerHTML=`
 <strong><span class="dot"></span>${esc(s.label)}</strong>
 <small>${esc(s.name||'نوع غير محدد')}</small>
 `;
-
-b.onclick=()=>{
-selected=i;
-fillEditor();
-render();
-};
-
+b.onclick=()=>{selected=i;fillEditor();render();};
 holder.appendChild(b);
 });
 
@@ -648,7 +601,6 @@ document.getElementById('dueCount').textContent=due;
 const s=list[selected];
 const inf=dueInfo(s);
 const box=document.getElementById('statusBox');
-
 box.className='status '+(inf.state==='warn'?'warn':inf.state==='due'?'due':'');
 box.textContent=statusText(s);
 
@@ -656,11 +608,8 @@ document.getElementById('stageTitle').textContent='بيانات '+s.label;
 document.getElementById('stagesHeading').textContent='مراحل فلتر '+current+' مراحل — دوس على أي مرحلة';
 document.getElementById('choose7').classList.toggle('active',current==='7');
 document.getElementById('choose5').classList.toggle('active',current==='5');
-
 document.getElementById('filterHint').textContent=
-current==='7'
-?'المدد الافتراضية: 3، 6، 6، 12، 12، 18، 24 شهر.'
-:'المدد الافتراضية: 3، 6، 6، 12، 12 شهر.';
+current==='7'?'المدد الافتراضية: 3، 6، 6، 12، 12، 18، 24 شهر.':'المدد الافتراضية: 3، 6، 6، 12، 12 شهر.';
 }
 
 function fillEditor(){
@@ -681,35 +630,26 @@ s.unit=document.getElementById('unit').value;
 s.details=document.getElementById('details').value.trim();
 }
 
-function switchFilter(t){
-current=t;
-selected=0;
-fillEditor();
-render();
-}
+function switchFilter(t){current=t;selected=0;fillEditor();render();}
 
 document.getElementById('choose7').onclick=()=>switchFilter('7');
 document.getElementById('choose5').onclick=()=>switchFilter('5');
 
 document.getElementById('saveBtn').onclick=()=>{
-readEditor();
-saveAll();
+readEditor();saveAll();
 document.getElementById('notifyMsg').textContent='تم حفظ البيانات وتحديث مواعيد التذكير تلقائيًا.';
 };
 
 document.getElementById('changedBtn').onclick=()=>{
-readEditor();
-filters[current][selected].date=localDateString();
-saveAll();
-fillEditor();
+readEditor();filters[current][selected].date=localDateString();
+saveAll();fillEditor();
 document.getElementById('notifyMsg').textContent='تم تسجيل تغيير الشمعة وتحديث موعدها القادم تلقائيًا.';
 };
 
 document.getElementById('clearBtn').onclick=()=>{
 if(confirm('متأكد إنك عاوز تمسح بيانات المرحلة دي؟')){
 filters[current][selected]=defaultStage(current,selected);
-saveAll();
-fillEditor();
+saveAll();fillEditor();
 document.getElementById('notifyMsg').textContent='تم مسح بيانات المرحلة وتحديث المواعيد تلقائيًا.';
 }
 };
@@ -734,7 +674,6 @@ document.getElementById('notifyMsg').textContent='لو بتستخدم APK، تأ
 document.getElementById('notificationsToggle').addEventListener('change',function(){
 const on=this.checked;
 const msg=document.getElementById('notifyMsg');
-
 try{
 if(window.AndroidBridge&&typeof AndroidBridge.setNotificationsEnabled==='function'){
 AndroidBridge.setNotificationsEnabled(on);
@@ -768,9 +707,7 @@ a.download='نسخة-فلتر-المياه.json';
 a.click();
 URL.revokeObjectURL(url);
 }
-}catch(e){
-alert('تعذر تصدير النسخة الاحتياطية.');
-}
+}catch(e){alert('تعذر تصدير النسخة الاحتياطية.');}
 };
 
 function importData(d){
@@ -779,11 +716,8 @@ filters['7']=d.map((s,i)=>normalizeStage(s,'7',i));
 }else if(d&&Array.isArray(d['7'])&&Array.isArray(d['5'])&&d['7'].length===7&&d['5'].length===5){
 filters['7']=d['7'].map((s,i)=>normalizeStage(s,'7',i));
 filters['5']=d['5'].map((s,i)=>normalizeStage(s,'5',i));
-}else{
-throw Error('bad backup');
-}
-saveAll();
-fillEditor();
+}else{throw Error('bad backup');}
+saveAll();fillEditor();
 alert('تم استيراد البيانات وتحديث مواعيد التذكير تلقائيًا.');
 }
 
@@ -791,30 +725,20 @@ document.getElementById('importBtn').onclick=()=>{
 try{
 if(window.AndroidBridge&&typeof AndroidBridge.importBackup==='function'){
 AndroidBridge.importBackup();
-}else{
-document.getElementById('importFile').click();
-}
-}catch(e){
-alert('تعذر فتح ملف النسخة الاحتياطية.');
-}
+}else{document.getElementById('importFile').click();}
+}catch(e){alert('تعذر فتح ملف النسخة الاحتياطية.');}
 };
 
 window.onNativeBackupImported=raw=>{
-try{
-importData(JSON.parse(raw));
-}catch(e){
-alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');
-}
+try{importData(JSON.parse(raw));}
+catch(e){alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');}
 };
 
 document.getElementById('importFile').onchange=async e=>{
 const f=e.target.files[0];
 if(!f)return;
-try{
-importData(JSON.parse(await f.text()));
-}catch(err){
-alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');
-}
+try{importData(JSON.parse(await f.text()));}
+catch(err){alert('الملف غير صالح أو مش نسخة احتياطية للتطبيق.');}
 e.target.value='';
 };
 

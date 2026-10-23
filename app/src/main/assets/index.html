@@ -577,8 +577,12 @@ const left=dayDiff(due,new Date());
 return {state:left<0?'due':left<=2?'warn':'active',left,due};
 }
 
+/* تعديل عرض التاريخ: يوم/شهر/سنة */
 function fmt(d){
-return d.toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'});
+const day=String(d.getDate()).padStart(2,'0');
+const month=String(d.getMonth()+1).padStart(2,'0');
+const year=d.getFullYear();
+return `${day}/${month}/${year}`;
 }
 
 function statusText(s){
